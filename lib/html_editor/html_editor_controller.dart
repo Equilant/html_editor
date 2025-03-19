@@ -31,7 +31,7 @@ abstract interface class IHtmlEditorController {
 
   Future<void> replaceLocalImagesWithLinks();
 
-  Future<void> pickFile();
+  Future<void> pickImage(ImageSource imageSource);
 
   ImageProvider<Object>? imageProviderBuilder(
       BuildContext context, String path);
@@ -307,12 +307,12 @@ class HtmlEditorController implements IHtmlEditorController {
   // }
 
   @override
-  Future<void> pickFile() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+  Future<void> pickImage(ImageSource imageSource) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: imageSource);
 
-    if (result != null && result.files.isNotEmpty) {
-      final file = result.files.first;
-      final filePath = file.path;
+    if (image != null) {
+      final filePath = image.path;
 
       if (filePath != null) {
         try {

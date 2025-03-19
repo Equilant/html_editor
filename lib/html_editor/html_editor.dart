@@ -4,6 +4,8 @@ import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:untitled100/html_editor/html_editor_controller.dart';
 import 'dart:io' as io;
 
+import 'package:untitled100/html_editor/image_picker_dialog.dart';
+
 class HtmlEditor extends StatefulWidget {
   const HtmlEditor({super.key});
 
@@ -54,7 +56,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                     QuillToolbarCustomButtonOptions(
                       icon: Icon(Icons.image),
                       onPressed: () async =>
-                      await _controller.pickFile(),
+                          await ImagePickerDialog.showImagePickerDialog(
+                              context, _controller),
                     ),
                   ],
                   toolbarIconAlignment: WrapAlignment.start,
@@ -108,13 +111,13 @@ class _HtmlEditorState extends State<HtmlEditor> {
             ],
           ),
         ),
-
-        ElevatedButton(onPressed: () {
-          //_controller.replaceLocalFilesWithLinks();
-          //_controller.replaceLocalImagesWithLinks();
-          _controller.convertDeltaToHtml();
-
-        }, child: Text('send'))
+        ElevatedButton(
+            onPressed: () {
+              //_controller.replaceLocalFilesWithLinks();
+              //_controller.replaceLocalImagesWithLinks();
+              _controller.convertDeltaToHtml();
+            },
+            child: Text('send'))
       ],
     );
   }
