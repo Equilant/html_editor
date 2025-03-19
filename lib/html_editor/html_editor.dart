@@ -109,7 +109,9 @@ class _HtmlEditorState extends State<HtmlEditor> {
         ),
 
         ElevatedButton(onPressed: () {
-          _controller.replaceLocalFilesWithLinks();
+          //_controller.replaceLocalFilesWithLinks();
+          //_controller.replaceLocalImagesWithLinks();
+          _controller.convertDeltaToHtml();
 
         }, child: Text('send'))
       ],

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -25,6 +26,8 @@ abstract interface class IHtmlEditorController {
   Future<void> openFileOrLink(String url);
 
   Future<void> replaceLocalFilesWithLinks();
+
+  Future<void> replaceLocalImagesWithLinks();
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -36,20 +39,7 @@ class HtmlEditorController implements IHtmlEditorController {
         config: QuillControllerConfig(
       clipboardConfig: QuillClipboardConfig(
         enableExternalRichPaste: true,
-        onImagePaste: (imageBytes) async {
-          // Save the image somewhere and return the image URL that will be
-          // stored in the Quill Delta JSON (the document).
-          final newFileName =
-              'image-file-${DateTime.now().toIso8601String()}.png';
-          final newPath = path.join(
-            io.Directory.systemTemp.path,
-            newFileName,
-          );
-          final file = await io.File(
-            newPath,
-          ).writeAsBytes(imageBytes, flush: true);
-          return file.path;
-        },
+        onImagePaste: onImagePasteHandler,
       ),
     ));
 
@@ -63,14 +53,57 @@ class HtmlEditorController implements IHtmlEditorController {
     _controller.dispose();
   }
 
-  String sanitizeFileName(String name) {
-    final String normalized = name
-        .replaceAll(RegExp(r'\s+'), '_') // Заменяем пробелы на "_"
-        .replaceAll(RegExp(r'[^\w\-.]'), '') // Убираем недопустимые символы
-        .toLowerCase();
+  // Future<String?> uploadImageToServer(String filePath) async {
+  //   final file = io.File(filePath);
+  //   if (!file.existsSync()) return null;
+  //
+  //   final uri = Uri.parse("https://ваш-сервер.com/upload"); // Укажите свой сервер
+  //   final mimeType = lookupMimeType(filePath) ?? 'image/png';
+  //
+  //   final request = http.MultipartRequest('POST', uri)
+  //     ..files.add(await http.MultipartFile.fromPath('file', file.path))
+  //     ..headers['Content-Type'] = mimeType;
+  //
+  //   try {
+  //     final response = await request.send();
+  //     if (response.statusCode == 200) {
+  //       final responseBody = await response.stream.bytesToString();
+  //       return extractImageUrl(responseBody); // Функция для получения ссылки из ответа
+  //     } else {
+  //       print("Ошибка загрузки: ${response.statusCode}");
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     print("Ошибка сети: $e");
+  //     return null;
+  //   }
+  // }
 
-    return normalized;
+
+
+  Future<String> onImagePasteHandler(Uint8List imageBytes) async {
+    // Получаем директорию для хранения
+    final directory = await getApplicationDocumentsDirectory();
+    final fileName = 'pasted_image_${DateTime.now().millisecondsSinceEpoch}.png';
+    final filePath = path.join(directory.path, fileName);
+
+    // Сохраняем изображение в локальное хранилище
+    final file = io.File(filePath);
+    await file.writeAsBytes(imageBytes);
+
+    // Вставляем локальный путь в редактор (он будет заменен позже)
+    return 'file://$filePath';
   }
+
+
+
+
+// Функция для извлечения URL из JSON-ответа
+  String extractImageUrl(String responseBody) {
+    // Например, если сервер возвращает {"url": "https://server.com/image.png"}
+    return responseBody; // Заглушка, замените на парсинг JSON
+  }
+
 
   @override
   Future<void> insertFileFromStorage() async {
@@ -101,27 +134,6 @@ class HtmlEditorController implements IHtmlEditorController {
       }
     }
   }
-
-  // @override
-  // Future<void> insertFileFromStorage() async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles();
-  //   if (result != null && result.files.isNotEmpty) {
-  //     final file = result.files.first;
-  //     final fileName = file.name;
-  //     final filePath = file.path;
-  //     if (filePath != null) {
-  //       final index = _controller.selection.baseOffset;
-  //       // Вставляем название файла
-  //       _controller.document.insert(index, fileName);
-  //       // Форматируем вставленный текст как ссылку на файл
-  //       _controller.formatText(
-  //         index,
-  //         fileName.length,
-  //         Attribute<String>('link', AttributeScope.inline, filePath),
-  //       );
-  //     }
-  //   }
-  // }
 
   Future<String> uploadFileToServer(String localPath) async {
     final file = io.File(localPath);
@@ -164,6 +176,39 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   @override
+  Future<void> replaceLocalImagesWithLinks() async {
+    final delta = _controller.document.toDelta();
+    int index = 0;
+
+    for (var op in delta.toList()) {
+      if (op.data is Map && (op.data as Map).containsKey('image')) {
+        final localPath = (op.data as Map)['image'];
+
+        if (localPath.startsWith('/')) { // Локальный путь (без 'file://')
+          try {
+            final uploadedUrl = await uploadFileToServer(localPath);
+
+            // Заменяем локальный путь на ссылку в редакторе
+            _controller.replaceText(
+              index,
+              1, // Заменяем 1 элемент
+              BlockEmbed.image(uploadedUrl), // Передаем корректный объект
+              null,
+            );
+          } catch (e) {
+            debugPrint("Ошибка загрузки изображения: $e");
+          }
+        }
+      }
+
+      // Увеличиваем index на длину текущей операции
+      index += op.length ?? 0;
+    }
+  }
+
+
+
+  @override
   Future<void> replaceLocalFilesWithLinks() async {
     final delta = _controller.document.toDelta();
     int currentOffset = 0;
@@ -194,6 +239,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
       // Увеличиваем текущую позицию на длину операции
       currentOffset += opLength;
+      convertDeltaToHtml();
     }
   }
 
