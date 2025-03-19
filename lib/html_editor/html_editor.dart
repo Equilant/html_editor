@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:untitled100/html_editor/html_editor_controller.dart';
+import 'dart:io' as io;
 
 class HtmlEditor extends StatefulWidget {
   const HtmlEditor({super.key});
@@ -50,10 +51,16 @@ class _HtmlEditorState extends State<HtmlEditor> {
                       onPressed: () async =>
                           await _controller.insertFileFromStorage(),
                     ),
+                    QuillToolbarCustomButtonOptions(
+                      icon: Icon(Icons.image),
+                      onPressed: () async =>
+                      await _controller.pickFile(),
+                    ),
                   ],
                   toolbarIconAlignment: WrapAlignment.start,
                   embedButtons: FlutterQuillEmbeds.toolbarButtons(
                     videoButtonOptions: null,
+                    imageButtonOptions: null,
                   ),
                   showClipboardPaste: false,
                   showDividers: false,
@@ -92,13 +99,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                   embedBuilders: [
                     ...FlutterQuillEmbeds.editorBuilders(
                       imageEmbedConfig: QuillEditorImageEmbedConfig(
-                        imageProviderBuilder: (context, imageUrl) {
-                          // https://pub.dev/packages/flutter_quill_extensions#-image-assets
-                          if (imageUrl.startsWith('assets/')) {
-                            return AssetImage(imageUrl);
-                          }
-                          return null;
-                        },
+                        imageProviderBuilder: _controller.imageProviderBuilder,
                       ),
                     ),
                   ],

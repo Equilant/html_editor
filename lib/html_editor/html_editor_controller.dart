@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
@@ -13,6 +14,7 @@ import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
 import 'dart:io' as io show Directory, File;
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 abstract interface class IHtmlEditorController {
   void dispose();
@@ -28,6 +30,11 @@ abstract interface class IHtmlEditorController {
   Future<void> replaceLocalFilesWithLinks();
 
   Future<void> replaceLocalImagesWithLinks();
+
+  Future<void> pickFile();
+
+  ImageProvider<Object>? imageProviderBuilder(
+      BuildContext context, String path);
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -79,12 +86,11 @@ class HtmlEditorController implements IHtmlEditorController {
   //   }
   // }
 
-
-
   Future<String> onImagePasteHandler(Uint8List imageBytes) async {
     // Получаем директорию для хранения
     final directory = await getApplicationDocumentsDirectory();
-    final fileName = 'pasted_image_${DateTime.now().millisecondsSinceEpoch}.png';
+    final fileName =
+        'pasted_image_${DateTime.now().millisecondsSinceEpoch}.png';
     final filePath = path.join(directory.path, fileName);
 
     // Сохраняем изображение в локальное хранилище
@@ -94,16 +100,6 @@ class HtmlEditorController implements IHtmlEditorController {
     // Вставляем локальный путь в редактор (он будет заменен позже)
     return 'file://$filePath';
   }
-
-
-
-
-// Функция для извлечения URL из JSON-ответа
-  String extractImageUrl(String responseBody) {
-    // Например, если сервер возвращает {"url": "https://server.com/image.png"}
-    return responseBody; // Заглушка, замените на парсинг JSON
-  }
-
 
   @override
   Future<void> insertFileFromStorage() async {
@@ -184,7 +180,8 @@ class HtmlEditorController implements IHtmlEditorController {
       if (op.data is Map && (op.data as Map).containsKey('image')) {
         final localPath = (op.data as Map)['image'];
 
-        if (localPath.startsWith('/')) { // Локальный путь (без 'file://')
+        if (localPath.startsWith('/')) {
+          // Локальный путь (без 'file://')
           try {
             final uploadedUrl = await uploadFileToServer(localPath);
 
@@ -205,8 +202,6 @@ class HtmlEditorController implements IHtmlEditorController {
       index += op.length ?? 0;
     }
   }
-
-
 
   @override
   Future<void> replaceLocalFilesWithLinks() async {
@@ -293,5 +288,90 @@ class HtmlEditorController implements IHtmlEditorController {
     final html = converter.convert();
 
     print(html);
+  }
+
+  // @override
+  // Future<void> pickFile() async {
+  //   final ImagePicker picker = ImagePicker();
+  //   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  //
+  //   if (image != null) await _insertImageIntoEditor(File(image.path));
+  //
+  // }
+  //
+  // Future<void> _insertImageIntoEditor(File file) async {
+  //   final uploadedUrl = await uploadImage(file); // Загружаем файл и получаем URL
+  //   final index = _controller.selection.baseOffset;
+  //
+  //   _controller.document.insert(index, BlockEmbed.image(uploadedUrl));
+  // }
+
+  @override
+  Future<void> pickFile() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.first;
+      final filePath = file.path;
+
+      if (filePath != null) {
+        try {
+          // Получаем директорию для хранения
+          final directory = await getApplicationDocumentsDirectory();
+          final newPath = path.join(directory.path, path.basename(filePath));
+
+          //  Проверяем, существует ли исходный файл
+          final originalFile = io.File(filePath);
+          if (!await originalFile.exists()) {
+            debugPrint("Файл не найден: $filePath");
+            return;
+          }
+
+          // Копируем файл в локальное хранилище
+          final localFile = await originalFile.copy(newPath);
+
+          //  Проверяем, скопировался ли файл
+          if (!await localFile.exists()) {
+            debugPrint("Ошибка копирования файла: $newPath");
+            return;
+          }
+
+          // Формируем корректный путь
+          final localImagePath = 'file://${localFile.path}';
+
+          // Вставляем картинку в редактор
+          final index = _controller.selection.baseOffset;
+          _controller.document.insert(index, BlockEmbed.image(localImagePath));
+
+          // Уведомляем редактор об изменениях
+          _controller.updateSelection(
+            TextSelection.collapsed(offset: index + 1),
+            ChangeSource.local,
+          );
+
+          debugPrint("Изображение успешно вставлено: $localImagePath");
+        } catch (e) {
+          debugPrint("Ошибка вставки изображения: $e");
+        }
+      }
+    }
+  }
+
+  @override
+  ImageProvider<Object>? imageProviderBuilder(
+      BuildContext context, String path) {
+    // https://pub.dev/packages/flutter_quill_extensions#-image-assets
+    if (path.startsWith('file:/')) {
+      String cleanedPath = removeFilePrefix(path);
+      return FileImage(io.File(cleanedPath));
+    }
+    return null;
+  }
+
+  String removeFilePrefix(String path) {
+    if (path.startsWith('file://')) {
+      return path.replaceFirst('file://', '');
+    }
+    return path;
   }
 }
