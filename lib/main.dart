@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled100/html_editor/html_editor.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -19,6 +20,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      locale: Locale('ru', ''),
+      supportedLocales: [
+        Locale('ru', ''), // Russian
+      ],
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
