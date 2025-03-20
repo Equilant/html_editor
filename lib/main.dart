@@ -40,7 +40,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +47,13 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: HtmlEditor(), // This trailing comma makes auto-formatting nicer for build methods.
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            HtmlEditor(),
+          ],
+        ),
+      ),
     );
   }
 }

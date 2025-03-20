@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:untitled100/html_editor/html_editor_controller.dart';
-import 'dart:io' as io;
 
 import 'package:untitled100/html_editor/image_picker_dialog.dart';
 
@@ -102,8 +101,12 @@ class _HtmlEditorState extends State<HtmlEditor> {
                   embedBuilders: [
                     ...FlutterQuillEmbeds.editorBuilders(
                       imageEmbedConfig: QuillEditorImageEmbedConfig(
-                        imageProviderBuilder: _controller.imageProviderBuilder,
-                      ),
+                          imageProviderBuilder:
+                              _controller.imageProviderBuilder,
+                          onImageClicked: (imageUrl) {
+                            ImagePickerDialog.showDeletionImageDialog(
+                                context, imageUrl, _controller);
+                          }),
                     ),
                   ],
                 ),

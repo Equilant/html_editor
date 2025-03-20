@@ -15,6 +15,7 @@ import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart
 import 'dart:io' as io show Directory, File;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_quill/flutter_quill.dart' as leaf;
 
 abstract interface class IHtmlEditorController {
   void dispose();
@@ -35,6 +36,8 @@ abstract interface class IHtmlEditorController {
 
   ImageProvider<Object>? imageProviderBuilder(
       BuildContext context, String path);
+
+  void deleteImage(String imageUrl);
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -132,7 +135,7 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   Future<String> uploadFileToServer(String localPath) async {
-    final file = io.File(localPath);
+    final file = io.File(removeFilePrefix(localPath));
     final uri = Uri.parse(
         "https://local.dev.k8s.umschool.dev/froala_editor/file_upload/");
 
@@ -180,7 +183,7 @@ class HtmlEditorController implements IHtmlEditorController {
       if (op.data is Map && (op.data as Map).containsKey('image')) {
         final localPath = (op.data as Map)['image'];
 
-        if (localPath.startsWith('/')) {
+        if (localPath.startsWith('file://')) {
           // Локальный путь (без 'file://')
           try {
             final uploadedUrl = await uploadFileToServer(localPath);
@@ -374,4 +377,35 @@ class HtmlEditorController implements IHtmlEditorController {
     }
     return path;
   }
+
+  @override
+  void deleteImage(String imageUrl) {
+    final delta = _controller.document.toDelta();
+    int index = 0;
+
+    for (var op in delta.toList()) {
+      if (op.data is Map && (op.data as Map).containsKey('image')) {
+        final localPath = (op.data as Map)['image'];
+
+        // Проверяем, что путь совпадает с тем, который хотим удалить
+        if (localPath == imageUrl) {
+          try {
+            _controller.replaceText(
+              index,
+              1,
+              '',
+              TextSelection.collapsed(offset: index),
+            );
+            return; // Выходим из цикла, удалив нужную картинку
+          } catch (e) {
+            debugPrint("Ошибка удаления изображения: $e");
+          }
+        }
+      }
+
+      // Увеличиваем index на длину текущей операции
+      index += op.length ?? 0;
+    }
+  }
+
 }
