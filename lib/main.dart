@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled100/html_editor/html_editor.dart';
+import 'package:untitled100/src/editor.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -11,7 +11,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -48,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
@@ -55,7 +55,23 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            HtmlEditor(),
+            Container(
+              color: Colors.green,
+              height: 300,
+            ),
+            Editor(readOnly: false),
+            Container(
+              color: Colors.green,
+              height: 300,
+            ),
+            Container(
+              color: Colors.green,
+              height: 300,
+            ),
+            Container(
+              color: Colors.green,
+              height: 300,
+            ),
           ],
         ),
       ),

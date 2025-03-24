@@ -166,6 +166,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  flutter_keyboard_visibility:
+    dependency: "direct main"
+    description:
+      name: flutter_keyboard_visibility
+      sha256: "98664be7be0e3ffca00de50f7f6a287ab62c763fc8c762e0a21584584a3ff4f8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   flutter_keyboard_visibility_linux:
     dependency: transitive
     description:
@@ -198,6 +206,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.5"
+  flutter_keyboard_visibility_web:
+    dependency: transitive
+    description:
+      name: flutter_keyboard_visibility_web
+      sha256: d3771a2e752880c79203f8d80658401d0c998e4183edca05a149f5098ce6e3d1
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   flutter_keyboard_visibility_windows:
     dependency: transitive
     description:
@@ -228,7 +244,7 @@ packages:
     source: hosted
     version: "2.0.24"
   flutter_quill:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_quill
       sha256: "3765d057bb63e6e5b7d5aba7c8fb048ec1b38c8a3428ded8c22e57cf2682a580"
@@ -236,7 +252,7 @@ packages:
     source: hosted
     version: "11.0.0"
   flutter_quill_delta_from_html:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_quill_delta_from_html
       sha256: "79405765612016de9de2361be86383360b0b43a6bf88b818c079a953583f1849"
@@ -244,7 +260,7 @@ packages:
     source: hosted
     version: "1.5.0"
   flutter_quill_extensions:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_quill_extensions
       sha256: "099dbaa962d14ac562eb028fd24d37670338352863044b7751fe642a2d2de938"
@@ -294,7 +310,7 @@ packages:
     source: hosted
     version: "4.1.2"
   image_picker:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: image_picker
       sha256: "021834d9c0c3de46bf0fe40341fa07168407f694d9b2bb18d532dc1261867f7a"
@@ -835,7 +851,7 @@ packages:
     source: hosted
     version: "14.3.0"
   vsc_quill_delta_to_html:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: vsc_quill_delta_to_html
       sha256: "9aca60d53ed1b700e922dabff8cd8b3490daecbf99c258f19eb45820b794fa45"

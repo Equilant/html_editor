@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
@@ -15,7 +14,18 @@ import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart
 import 'dart:io' as io show Directory, File;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_quill/flutter_quill.dart' as leaf;
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+
+enum HtmlAlignmentType {
+  left('слева'),
+  right('справа'),
+  center('по центру'),
+  justify('по ширине');
+
+  final String title;
+
+  const HtmlAlignmentType(this.title);
+}
 
 abstract interface class IHtmlEditorController {
   void dispose();
@@ -38,13 +48,18 @@ abstract interface class IHtmlEditorController {
       BuildContext context, String path);
 
   void deleteImage(String imageUrl);
+
+  void setAlignment(HtmlAlignmentType align);
 }
 
 class HtmlEditorController implements IHtmlEditorController {
   late final QuillController _controller;
-  final String html;
+  final String? externalHtml;
+  String? internalHtml;
 
-  HtmlEditorController({required this.html}) {
+  final void Function(String content)? onContentChanged;
+
+  HtmlEditorController({this.externalHtml, this.onContentChanged}) {
     _controller = QuillController.basic(
         config: QuillControllerConfig(
       clipboardConfig: QuillClipboardConfig(
@@ -53,41 +68,19 @@ class HtmlEditorController implements IHtmlEditorController {
       ),
     ));
 
-    var delta = HtmlToDelta().convert(html);
+    if (externalHtml?.isNotEmpty ?? false) {
+      var delta = HtmlToDelta().convert(externalHtml!);
+      _controller.document = Document.fromDelta(delta);
+    }
 
-    _controller.document = Document.fromDelta(delta);
+    _controller.addListener(convertDeltaToHtml);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(convertDeltaToHtml);
     _controller.dispose();
   }
-
-  // Future<String?> uploadImageToServer(String filePath) async {
-  //   final file = io.File(filePath);
-  //   if (!file.existsSync()) return null;
-  //
-  //   final uri = Uri.parse("https://ваш-сервер.com/upload"); // Укажите свой сервер
-  //   final mimeType = lookupMimeType(filePath) ?? 'image/png';
-  //
-  //   final request = http.MultipartRequest('POST', uri)
-  //     ..files.add(await http.MultipartFile.fromPath('file', file.path))
-  //     ..headers['Content-Type'] = mimeType;
-  //
-  //   try {
-  //     final response = await request.send();
-  //     if (response.statusCode == 200) {
-  //       final responseBody = await response.stream.bytesToString();
-  //       return extractImageUrl(responseBody); // Функция для получения ссылки из ответа
-  //     } else {
-  //       print("Ошибка загрузки: ${response.statusCode}");
-  //       return null;
-  //     }
-  //   } catch (e) {
-  //     print("Ошибка сети: $e");
-  //     return null;
-  //   }
-  // }
 
   Future<String> onImagePasteHandler(Uint8List imageBytes) async {
     // Получаем директорию для хранения
@@ -149,7 +142,6 @@ class HtmlEditorController implements IHtmlEditorController {
       ..files.add(await http.MultipartFile.fromPath(
         'file',
         file.path,
-        // contentType: MediaType('application', 'pdf'), // Укажи нужный MIME-тип
         contentType: _getMediaType(mimeType),
       ))
       //..headers['Content-Disposition'] = 'inline; filename="${path.basename(file.path)}"'; // Важно!
@@ -288,9 +280,10 @@ class HtmlEditorController implements IHtmlEditorController {
     final converter = QuillDeltaToHtmlConverter(
       _controller.document.toDelta().toJson(),
     );
-    final html = converter.convert();
 
-    print(html);
+    internalHtml = converter.convert();
+    onContentChanged?.call(internalHtml ?? '');
+    print(internalHtml);
   }
 
   // @override
@@ -317,45 +310,43 @@ class HtmlEditorController implements IHtmlEditorController {
     if (image != null) {
       final filePath = image.path;
 
-      if (filePath != null) {
-        try {
-          // Получаем директорию для хранения
-          final directory = await getApplicationDocumentsDirectory();
-          final newPath = path.join(directory.path, path.basename(filePath));
+      try {
+        // Получаем директорию для хранения
+        final directory = await getApplicationDocumentsDirectory();
+        final newPath = path.join(directory.path, path.basename(filePath));
 
-          //  Проверяем, существует ли исходный файл
-          final originalFile = io.File(filePath);
-          if (!await originalFile.exists()) {
-            debugPrint("Файл не найден: $filePath");
-            return;
-          }
-
-          // Копируем файл в локальное хранилище
-          final localFile = await originalFile.copy(newPath);
-
-          //  Проверяем, скопировался ли файл
-          if (!await localFile.exists()) {
-            debugPrint("Ошибка копирования файла: $newPath");
-            return;
-          }
-
-          // Формируем корректный путь
-          final localImagePath = 'file://${localFile.path}';
-
-          // Вставляем картинку в редактор
-          final index = _controller.selection.baseOffset;
-          _controller.document.insert(index, BlockEmbed.image(localImagePath));
-
-          // Уведомляем редактор об изменениях
-          _controller.updateSelection(
-            TextSelection.collapsed(offset: index + 1),
-            ChangeSource.local,
-          );
-
-          debugPrint("Изображение успешно вставлено: $localImagePath");
-        } catch (e) {
-          debugPrint("Ошибка вставки изображения: $e");
+        //  Проверяем, существует ли исходный файл
+        final originalFile = io.File(filePath);
+        if (!await originalFile.exists()) {
+          debugPrint("Файл не найден: $filePath");
+          return;
         }
+
+        // Копируем файл в локальное хранилище
+        final localFile = await originalFile.copy(newPath);
+
+        //  Проверяем, скопировался ли файл
+        if (!await localFile.exists()) {
+          debugPrint("Ошибка копирования файла: $newPath");
+          return;
+        }
+
+        // Формируем корректный путь
+        final localImagePath = 'file://${localFile.path}';
+
+        // Вставляем картинку в редактор
+        final index = _controller.selection.baseOffset;
+        _controller.document.insert(index, BlockEmbed.image(localImagePath));
+
+        // Уведомляем редактор об изменениях
+        _controller.updateSelection(
+          TextSelection.collapsed(offset: index + 1),
+          ChangeSource.local,
+        );
+
+        debugPrint("Изображение успешно вставлено: $localImagePath");
+      } catch (e) {
+        debugPrint("Ошибка вставки изображения: $e");
       }
     }
   }
@@ -363,7 +354,6 @@ class HtmlEditorController implements IHtmlEditorController {
   @override
   ImageProvider<Object>? imageProviderBuilder(
       BuildContext context, String path) {
-    // https://pub.dev/packages/flutter_quill_extensions#-image-assets
     if (path.startsWith('file:/')) {
       String cleanedPath = removeFilePrefix(path);
       return FileImage(io.File(cleanedPath));
@@ -408,4 +398,14 @@ class HtmlEditorController implements IHtmlEditorController {
     }
   }
 
+  @override
+  void setAlignment(HtmlAlignmentType align) {
+    final attribute = quill.Attribute.align;
+
+    _controller.formatSelection(
+      align == HtmlAlignmentType.left
+          ? quill.Attribute.clone(attribute, null)
+          : quill.Attribute.fromKeyValue('align', align.name),
+    );
+  }
 }
