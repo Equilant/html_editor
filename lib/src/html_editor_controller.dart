@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/quill_delta.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
@@ -69,11 +70,26 @@ class HtmlEditorController implements IHtmlEditorController {
     ));
 
     if (externalHtml?.isNotEmpty ?? false) {
-      var delta = HtmlToDelta().convert(externalHtml!);
+      var delta = HtmlToDelta(
+        shouldInsertANewLine: (_) => true,
+      ).convert(externalHtml!);
+
+      delta = fixDeltaSpacing(delta);
       _controller.document = Document.fromDelta(delta);
     }
 
     _controller.addListener(convertDeltaToHtml);
+  }
+
+  Delta fixDeltaSpacing(Delta delta) {
+    Delta newDelta = Delta();
+    for (var op in delta.toList()) {
+      newDelta.push(op);
+      if (op.data is String && (op.data as String).trim().isEmpty) {
+        newDelta.push(Operation.insert('\n'));
+      }
+    }
+    return newDelta;
   }
 
   @override
@@ -282,7 +298,12 @@ class HtmlEditorController implements IHtmlEditorController {
     );
 
     internalHtml = converter.convert();
-    onContentChanged?.call(internalHtml ?? '');
+    const emptyHtml = '<p><br/></p>';
+    if (internalHtml == emptyHtml) {
+      onContentChanged?.call('');
+    } else {
+      onContentChanged?.call(internalHtml ?? '');
+    }
     print(internalHtml);
   }
 

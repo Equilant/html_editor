@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:untitled100/html_editor.dart';
 import 'package:untitled100/src/html_editor_controller.dart';
 
 class ImagePickerDialog {
@@ -7,9 +8,11 @@ class ImagePickerDialog {
     BuildContext context,
     String imageUrl,
     IHtmlEditorController controller,
+    EditorColors? editorColors,
   ) async {
     await _showDialog(
       context,
+      editorColors: editorColors,
       children: [
         _buildListTile(
           title: 'Удалить изображение',
@@ -27,9 +30,11 @@ class ImagePickerDialog {
   static Future<void> showImagePickerDialog(
     BuildContext context,
     IHtmlEditorController controller,
-  ) async {
+      EditorColors? editorColors,
+      ) async {
     await _showDialog(
       context,
+      editorColors: editorColors,
       children: [
         const Text(
           'Добавить изображение',
@@ -58,10 +63,10 @@ class ImagePickerDialog {
   }
 
   static Future<void> _showDialog(BuildContext context,
-      {required List<Widget> children}) async {
+      {required List<Widget> children, EditorColors? editorColors,}) async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: editorColors?.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

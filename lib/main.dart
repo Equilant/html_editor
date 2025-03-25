@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled100/src/editor.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -55,23 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              color: Colors.green,
-              height: 300,
-            ),
             Editor(readOnly: false),
-            Container(
-              color: Colors.green,
-              height: 300,
-            ),
-            Container(
-              color: Colors.green,
-              height: 300,
-            ),
-            Container(
-              color: Colors.green,
-              height: 300,
-            ),
           ],
         ),
       ),

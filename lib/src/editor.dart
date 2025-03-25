@@ -14,6 +14,8 @@ class Editor extends StatefulWidget {
   final double maxHeight;
   final bool readOnly;
   final void Function(String content)? onContentChanged;
+  final EditorColors? editorColors;
+  final ThemeData? theme;
 
   const Editor({
     this.html,
@@ -23,6 +25,8 @@ class Editor extends StatefulWidget {
     this.controller,
     this.onControllerCreated,
     this.onContentChanged,
+    this.editorColors,
+    this.theme,
     super.key,
   });
 
@@ -110,166 +114,136 @@ class _EditorState extends State<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey)),
-          child: Column(
-            children: [
-              IgnorePointer(
-                ignoring: _controller.quillController.readOnly,
-                child: QuillSimpleToolbar(
-                  key: editorKey,
-                  controller: _controller.quillController,
-                  config: QuillSimpleToolbarConfig(
-                    customButtons: [
-                      QuillToolbarCustomButtonOptions(
-                        icon: Icon(Icons.attach_file),
-                        onPressed: () async =>
-                            await _controller.insertFileFromStorage(),
-                      ),
-                      QuillToolbarCustomButtonOptions(
-                        icon: Icon(Icons.image),
-                        onPressed: () async =>
-                            await ImagePickerDialog.showImagePickerDialog(
-                                context, _controller),
-                      ),
-                      QuillToolbarCustomButtonOptions(
-                          icon: Icon(Icons.format_align_justify_outlined),
-                          onPressed: () => _showAlignmentMenu(context))
-                    ],
-                    toolbarIconAlignment: WrapAlignment.start,
-                    embedButtons: FlutterQuillEmbeds.toolbarButtons(
-                      videoButtonOptions: null,
-                      imageButtonOptions: null,
-                    ),
-                    showClipboardPaste: false,
-                    showDividers: false,
-                    showFontFamily: false,
-                    showFontSize: false,
-                    showStrikeThrough: false,
-                    showInlineCode: false,
-                    showColorButton: false,
-                    showBackgroundColorButton: false,
-                    showClearFormat: false,
-                    showHeaderStyle: false,
-                    showListNumbers: false,
-                    showListBullets: false,
-                    showListCheck: false,
-                    showCodeBlock: false,
-                    showQuote: false,
-                    showIndent: false,
-                    showRedo: false,
-                    showSearchButton: false,
-                    showClipboardCut: false,
-                    showClipboardCopy: false,
-                    buttonOptions: QuillSimpleToolbarButtonOptions(),
-                  ),
-                ),
-              ),
-              QuillEditor(
-                focusNode: _editorFocusNode,
-                scrollController: _editorScrollController,
-                controller: _controller.quillController,
-                config: QuillEditorConfig(
-                  onLaunchUrl: (link) async =>
-                      await _controller.openFileOrLink(link),
-                  maxHeight: widget.maxHeight,
-                  minHeight: widget.minHeight,
-                  placeholder: 'Напишите что-нибудь...',
-                  customStyles: DefaultStyles(
-                    placeHolder: DefaultTextBlockStyle(
-                      TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey,
-                      ),
-                      HorizontalSpacing(0, 0),
-                      VerticalSpacing(0, 0),
-                      VerticalSpacing(0, 0),
-                      null,
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  embedBuilders: [
-                    ...FlutterQuillEmbeds.editorBuilders(
-                      imageEmbedConfig: QuillEditorImageEmbedConfig(
-                          imageProviderBuilder:
-                              _controller.imageProviderBuilder,
-                          onImageClicked: (imageUrl) {
-                            if (!_controller.quillController.readOnly) {
-                              ImagePickerDialog.showDeletionImageDialog(
-                                  context, imageUrl, _controller);
-                            }
-                          }),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+    return Theme(
+      data: (widget.theme ?? Theme.of(context)).copyWith(
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Colors.black,
         ),
-      ],
-    );
-  }
-
-  void _showAlignmentMenu(BuildContext context) {
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    showMenu(
-      context: context,
-      position: RelativeRect.fromRect(
-        Rect.fromPoints(
-          overlay.localToGlobal(Offset.zero),
-          overlay.localToGlobal(Offset.zero),
-        ),
-        Offset.zero & overlay.size,
       ),
-      items: [
-        PopupMenuItem(
-          child: Row(
-            spacing: 6,
-            children: [
-              Icon(Icons.format_align_left_outlined),
-              Text(HtmlAlignmentType.left.title)
-            ],
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey)),
+            child: Column(
+              children: [
+                IgnorePointer(
+                  ignoring: _controller.quillController.readOnly,
+                  child: QuillSimpleToolbar(
+                    key: editorKey,
+                    controller: _controller.quillController,
+                    config: QuillSimpleToolbarConfig(
+                      customButtons: [
+                        QuillToolbarCustomButtonOptions(
+                          icon: Icon(
+                            Icons.attach_file,
+                            color: widget.readOnly ? Colors.grey : null,
+                          ),
+                          onPressed: () async =>
+                              await _controller.insertFileFromStorage(),
+                        ),
+                        QuillToolbarCustomButtonOptions(
+                          icon: Icon(
+                            Icons.image,
+                            color: widget.readOnly ? Colors.grey : null,
+                          ),
+                          onPressed: () async =>
+                              await ImagePickerDialog.showImagePickerDialog(
+                                  context, _controller, widget.editorColors),
+                        ),
+                        QuillToolbarCustomButtonOptions(
+                            icon: Icon(
+                              Icons.format_align_justify_outlined,
+                              color: widget.readOnly ? Colors.grey : null,
+                            ),
+                            onPressed: () async => MenuDialog.showAlignmentMenu(
+                                context, _controller, widget.editorColors))
+                      ],
+                      toolbarIconAlignment: WrapAlignment.start,
+                      embedButtons: FlutterQuillEmbeds.toolbarButtons(
+                        videoButtonOptions: null,
+                        imageButtonOptions: null,
+                      ),
+                      showClipboardPaste: false,
+                      showDividers: false,
+                      showFontFamily: false,
+                      showFontSize: false,
+                      showStrikeThrough: false,
+                      showInlineCode: false,
+                      showColorButton: false,
+                      showBackgroundColorButton: false,
+                      showClearFormat: false,
+                      showHeaderStyle: false,
+                      showListNumbers: false,
+                      showListBullets: false,
+                      showListCheck: false,
+                      showCodeBlock: false,
+                      showQuote: false,
+                      showIndent: false,
+                      showRedo: false,
+                      showSearchButton: false,
+                      showClipboardCut: false,
+                      showClipboardCopy: false,
+                      buttonOptions: QuillSimpleToolbarButtonOptions(
+                        base: QuillToolbarBaseButtonOptions(
+                          iconTheme: QuillIconTheme(
+                            iconButtonUnselectedData: IconButtonData(
+                                color: widget.readOnly
+                                    ? Colors.grey
+                                    : widget.editorColors?.iconColor),
+                          ),
+                        ),
+                        linkStyle: QuillToolbarLinkStyleButtonOptions(
+                            iconTheme: QuillIconTheme(
+                                iconButtonUnselectedData: IconButtonData(
+                                    color: widget.readOnly
+                                        ? Colors.grey
+                                        : widget.editorColors?.iconColor)),
+                            dialogTheme: QuillDialogTheme(
+                              dialogBackgroundColor:
+                                  widget.editorColors?.backgroundColor,
+                            )),
+                      ),
+                    ),
+                  ),
+                ),
+                QuillEditor(
+                  focusNode: _editorFocusNode,
+                  scrollController: _editorScrollController,
+                  controller: _controller.quillController,
+                  config: QuillEditorConfig(
+                    onLaunchUrl: (link) async =>
+                        await _controller.openFileOrLink(link),
+                    maxHeight: widget.maxHeight,
+                    minHeight: widget.minHeight,
+                    placeholder: 'Напишите что-нибудь...',
+                    customStyles:
+                        EditorStyles.getInstance(context, widget.theme),
+                    padding: const EdgeInsets.all(16),
+                    embedBuilders: [
+                      ...FlutterQuillEmbeds.editorBuilders(
+                        imageEmbedConfig: QuillEditorImageEmbedConfig(
+                            imageProviderBuilder:
+                                _controller.imageProviderBuilder,
+                            onImageClicked: (imageUrl) {
+                              if (!_controller.quillController.readOnly) {
+                                ImagePickerDialog.showDeletionImageDialog(
+                                    context,
+                                    imageUrl,
+                                    _controller,
+                                    widget.editorColors);
+                              }
+                            }),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          onTap: () => _controller.setAlignment(HtmlAlignmentType.left),
-        ),
-        PopupMenuItem(
-          child: Row(
-            spacing: 6,
-            children: [
-              Icon(Icons.format_align_center_outlined),
-              Text(HtmlAlignmentType.center.title)
-            ],
-          ),
-          onTap: () => _controller.setAlignment(HtmlAlignmentType.center),
-        ),
-        PopupMenuItem(
-          child: Row(
-            spacing: 6,
-            children: [
-              Icon(Icons.format_align_right_outlined),
-              Text(HtmlAlignmentType.right.title)
-            ],
-          ),
-          onTap: () => _controller.setAlignment(HtmlAlignmentType.right),
-        ),
-        PopupMenuItem(
-          child: Row(
-            spacing: 6,
-            children: [
-              Icon(Icons.format_align_justify_outlined),
-              Text(HtmlAlignmentType.justify.title)
-            ],
-          ),
-          onTap: () => _controller.setAlignment(HtmlAlignmentType.justify),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
