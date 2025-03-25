@@ -1,8 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:untitled100/html_editor.dart';
 
@@ -36,80 +32,22 @@ class Editor extends StatefulWidget {
 
 class _EditorState extends State<Editor> {
   late final IHtmlEditorController _controller;
-  final FocusNode _editorFocusNode = FocusNode();
-  late final ScrollController _editorScrollController;
-  late final StreamSubscription? _keyboardSubscription;
-  late final KeyboardVisibilityController _keyboardVisibilityController;
-
-  final GlobalKey editorKey = GlobalKey();
 
   @override
   void initState() {
-    _editorScrollController = ScrollController();
     _controller = widget.controller ??
         HtmlEditorController(
             externalHtml: widget.html,
-            onContentChanged: widget.onContentChanged);
-    _controller.quillController.readOnly = widget.readOnly;
-    _keyboardVisibilityController = KeyboardVisibilityController();
-    widget.onControllerCreated?.call(_controller);
-
-    _keyboardSubscription =
-        _keyboardVisibilityController.onChange.listen(_onKeyboardVisible);
+            onContentChanged: widget.onContentChanged,
+            readOnly: widget.readOnly,
+            onControllerCreated: widget.onControllerCreated);
     super.initState();
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _editorScrollController.dispose();
-    _editorFocusNode.dispose();
-    _keyboardSubscription?.cancel();
     super.dispose();
-  }
-
-  void _onKeyboardVisible(bool isVisible) {
-    if (isVisible && editorKey.currentContext != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!isWidgetPartiallyVisible(editorKey)) {
-          _scrollToEditor();
-        }
-      });
-    }
-  }
-
-  void _scrollToEditor() {
-    final context = editorKey.currentContext;
-    if (context == null) return;
-
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final editorPosition = renderBox.localToGlobal(Offset.zero).dy;
-
-    final targetOffset = editorPosition - (screenHeight - keyboardHeight - 16);
-
-    Scrollable.ensureVisible(
-      context,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-      alignment: 0.35,
-    );
-  }
-
-  bool isWidgetPartiallyVisible(GlobalKey key) {
-    final RenderObject? renderObject = key.currentContext?.findRenderObject();
-    if (renderObject is RenderBox) {
-      final RenderAbstractViewport viewport =
-          RenderAbstractViewport.of(renderObject);
-      final RevealedOffset offset =
-          viewport.getOffsetToReveal(renderObject, 0.5);
-
-      return offset.offset < 50;
-    }
-    return false;
   }
 
   @override
@@ -131,7 +69,7 @@ class _EditorState extends State<Editor> {
                 IgnorePointer(
                   ignoring: _controller.quillController.readOnly,
                   child: QuillSimpleToolbar(
-                    key: editorKey,
+                    key: _controller.editorKey,
                     controller: _controller.quillController,
                     config: QuillSimpleToolbarConfig(
                       customButtons: [
@@ -209,8 +147,8 @@ class _EditorState extends State<Editor> {
                   ),
                 ),
                 QuillEditor(
-                  focusNode: _editorFocusNode,
-                  scrollController: _editorScrollController,
+                  focusNode: _controller.focusNode,
+                  scrollController: _controller.scrollController,
                   controller: _controller.quillController,
                   config: QuillEditorConfig(
                     onLaunchUrl: (link) async =>

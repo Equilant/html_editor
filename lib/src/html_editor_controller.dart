@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:http_parser/http_parser.dart';
@@ -51,6 +54,12 @@ abstract interface class IHtmlEditorController {
   void deleteImage(String imageUrl);
 
   void setAlignment(HtmlAlignmentType align);
+
+  GlobalKey get editorKey;
+
+  FocusNode get focusNode;
+
+  ScrollController get scrollController;
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -60,7 +69,24 @@ class HtmlEditorController implements IHtmlEditorController {
 
   final void Function(String content)? onContentChanged;
 
-  HtmlEditorController({this.externalHtml, this.onContentChanged}) {
+  late final FocusNode _editorFocusNode;
+  late final ScrollController _editorScrollController;
+  late final StreamSubscription? _keyboardSubscription;
+  late final KeyboardVisibilityController _keyboardVisibilityController;
+
+  late final GlobalKey _editorKey;
+  final bool? readOnly;
+
+  final void Function(IHtmlEditorController controller)? onControllerCreated;
+
+  bool _shouldDispose = true;
+
+  HtmlEditorController({
+    this.externalHtml,
+    this.onContentChanged,
+    this.readOnly,
+    this.onControllerCreated,
+  }) {
     _controller = QuillController.basic(
         config: QuillControllerConfig(
       clipboardConfig: QuillClipboardConfig(
@@ -68,6 +94,16 @@ class HtmlEditorController implements IHtmlEditorController {
         onImagePaste: onImagePasteHandler,
       ),
     ));
+
+    _editorKey = GlobalKey();
+    _editorFocusNode = FocusNode();
+    _editorScrollController = ScrollController();
+    _controller.readOnly = readOnly ?? false;
+    _keyboardVisibilityController = KeyboardVisibilityController();
+    onControllerCreated?.call(this);
+
+    _keyboardSubscription =
+        _keyboardVisibilityController.onChange.listen(_onKeyboardVisible);
 
     if (externalHtml?.isNotEmpty ?? false) {
       var delta = HtmlToDelta(
@@ -79,6 +115,50 @@ class HtmlEditorController implements IHtmlEditorController {
     }
 
     _controller.addListener(convertDeltaToHtml);
+  }
+
+  void _onKeyboardVisible(bool isVisible) {
+    if (isVisible && _editorKey.currentContext != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!isWidgetPartiallyVisible(_editorKey)) {
+          _scrollToEditor();
+        }
+      });
+    }
+  }
+
+  void _scrollToEditor() {
+    final context = _editorKey.currentContext;
+    if (context == null) return;
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final editorPosition = renderBox.localToGlobal(Offset.zero).dy;
+
+    final targetOffset = editorPosition - (screenHeight - keyboardHeight - 16);
+
+    Scrollable.ensureVisible(
+      context,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      alignment: 0.35,
+    );
+  }
+
+  bool isWidgetPartiallyVisible(GlobalKey key) {
+    final RenderObject? renderObject = key.currentContext?.findRenderObject();
+    if (renderObject is RenderBox) {
+      final RenderAbstractViewport viewport =
+          RenderAbstractViewport.of(renderObject);
+      final RevealedOffset offset =
+          viewport.getOffsetToReveal(renderObject, 0.5);
+
+      return offset.offset < 50;
+    }
+    return false;
   }
 
   Delta fixDeltaSpacing(Delta delta) {
@@ -94,8 +174,15 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   void dispose() {
-    _controller.removeListener(convertDeltaToHtml);
-    _controller.dispose();
+    if (_shouldDispose) {
+      _controller.removeListener(convertDeltaToHtml);
+      _controller.dispose();
+      _editorScrollController.dispose();
+      _editorFocusNode.dispose();
+      _keyboardSubscription?.cancel();
+      _editorKey.currentState?.dispose();
+      _shouldDispose = false;
+    }
   }
 
   Future<String> onImagePasteHandler(Uint8List imageBytes) async {
@@ -184,6 +271,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   Future<void> replaceLocalImagesWithLinks() async {
+    _shouldDispose = false;
     final delta = _controller.document.toDelta();
     int index = 0;
 
@@ -211,13 +299,14 @@ class HtmlEditorController implements IHtmlEditorController {
 
       // Увеличиваем index на длину текущей операции
       index += op.length ?? 0;
-
     }
-    convertDeltaToHtml();
+    _shouldDispose = true;
+    //convertDeltaToHtml();
   }
 
   @override
   Future<void> replaceLocalFilesWithLinks() async {
+    _shouldDispose = false;
     final delta = _controller.document.toDelta();
     int currentOffset = 0;
 
@@ -247,9 +336,9 @@ class HtmlEditorController implements IHtmlEditorController {
 
       // Увеличиваем текущую позицию на длину операции
       currentOffset += opLength;
-
     }
-    convertDeltaToHtml();
+    //convertDeltaToHtml();
+    _shouldDispose = true;
   }
 
   @override
@@ -432,4 +521,13 @@ class HtmlEditorController implements IHtmlEditorController {
           : quill.Attribute.fromKeyValue('align', align.name),
     );
   }
+
+  @override
+  GlobalKey<State<StatefulWidget>> get editorKey => _editorKey;
+
+  @override
+  FocusNode get focusNode => _editorFocusNode;
+
+  @override
+  ScrollController get scrollController => _editorScrollController;
 }
