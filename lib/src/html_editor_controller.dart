@@ -123,7 +123,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
       if (filePath != null) {
         // Перемещаем файл в локальную папку приложения
-        final directory = await getApplicationDocumentsDirectory();
+        final directory = await getTemporaryDirectory();
         final newPath = path.join(directory.path, fileName);
         final localFile = await io.File(filePath).copy(newPath);
 
@@ -211,7 +211,9 @@ class HtmlEditorController implements IHtmlEditorController {
 
       // Увеличиваем index на длину текущей операции
       index += op.length ?? 0;
+
     }
+    convertDeltaToHtml();
   }
 
   @override
@@ -245,8 +247,9 @@ class HtmlEditorController implements IHtmlEditorController {
 
       // Увеличиваем текущую позицию на длину операции
       currentOffset += opLength;
-      convertDeltaToHtml();
+
     }
+    convertDeltaToHtml();
   }
 
   @override
@@ -333,7 +336,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
       try {
         // Получаем директорию для хранения
-        final directory = await getApplicationDocumentsDirectory();
+        final directory = await getTemporaryDirectory();
         final newPath = path.join(directory.path, path.basename(filePath));
 
         //  Проверяем, существует ли исходный файл
