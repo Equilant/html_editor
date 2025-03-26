@@ -109,7 +109,9 @@ class HtmlEditorController implements IHtmlEditorController {
         _keyboardVisibilityController.onChange.listen(_onKeyboardVisible);
 
     if (externalHtml?.isNotEmpty ?? false) {
-      String fixedHtml = convertHtmlAlignmentToQuill(externalHtml!);
+
+      //final quillHtml = convertFroalaToQuill(externalHtml!);
+      String fixedHtml = convertQuillAlignmentToHtml(externalHtml!);
       var delta = HtmlToDelta(
         shouldInsertANewLine: (_) => true,
       ).convert(fixedHtml);
@@ -400,7 +402,8 @@ class HtmlEditorController implements IHtmlEditorController {
     if (internalHtml == emptyHtml) {
       onContentChanged?.call('');
     } else {
-      onContentChanged?.call(internalHtml ?? '');
+      final html = convertQuillAlignmentToHtml(internalHtml ?? '');
+      onContentChanged?.call(html);
     }
     print(internalHtml);
   }
@@ -521,9 +524,27 @@ class HtmlEditorController implements IHtmlEditorController {
   @override
   ScrollController get scrollController => _editorScrollController;
 
-  String convertHtmlAlignmentToQuill(String html) {
-    return html.replaceAllMapped(RegExp(r'class="ql-align-(\w+)"'), (match) {
+  String convertQuillAlignmentToHtml(String html) {
+    // Заменяем class="ql-align-..." на style="text-align: ..."
+    html = html.replaceAllMapped(RegExp(r'class="ql-align-(\w+)"'), (match) {
       return 'style="text-align: ${match.group(1)};"';
     });
+
+    // Удаляем <br> перед закрывающим </p>
+    html = html.replaceAll(RegExp(r'<br>\s*</p>'), '</p>');
+
+    return html;
   }
+
+
+
+
+  // String convertFroalaToQuill(String html) {
+  //   return html
+  //       .replaceAllMapped(RegExp(r'style="text-align:\s*(right|left|center|justify);"'), (match) {
+  //     final alignValue = match.group(1);
+  //     return 'class="ql-align-$alignValue"';
+  //   });
+  // }
+
 }
