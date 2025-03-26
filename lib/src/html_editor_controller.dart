@@ -42,9 +42,9 @@ abstract interface class IHtmlEditorController {
 
   Future<void> openFileOrLink(String url);
 
-  Future<void> replaceLocalFilesWithLinks();
+  Future<bool> replaceLocalFilesWithLinks();
 
-  Future<void> replaceLocalImagesWithLinks();
+  Future<bool> replaceLocalImagesWithLinks();
 
   Future<void> pickImage(ImageSource imageSource);
 
@@ -60,6 +60,8 @@ abstract interface class IHtmlEditorController {
   FocusNode get focusNode;
 
   ScrollController get scrollController;
+
+  Future<bool> replaceLocalMediaWithLinks();
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -259,7 +261,7 @@ class HtmlEditorController implements IHtmlEditorController {
       ..headers['Content-Type'] = mimeType;
 
     final response = await request.send();
-    if (response.statusCode == 200) {
+    if (_defaultValidateStatus(response.statusCode)) {
       final responseData = await response.stream.bytesToString();
       final json = jsonDecode(responseData);
       return json['link']; // URL загруженного файла
@@ -278,10 +280,75 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   @override
-  Future<void> replaceLocalImagesWithLinks() async {
+  Future<bool> replaceLocalMediaWithLinks() async {
     _shouldDispose = false;
     final delta = _controller.document.toDelta();
     int index = 0;
+    bool hasErrors = false;
+
+    for (var op in delta.toList()) {
+      final opLength = op.length ?? op.data.toString().length;
+
+      if (op.data is Map && (op.data as Map).containsKey('image')) {
+        // Обрабатываем изображения
+        final localPath = (op.data as Map)['image'];
+
+        if (localPath.startsWith('file://')) {
+          try {
+            final uploadedUrl = await uploadFileToServer(localPath, false);
+
+            // Заменяем локальный путь на ссылку в редакторе
+            _controller.replaceText(
+              index,
+              1, // Заменяем 1 элемент
+              BlockEmbed.image(uploadedUrl),
+              null,
+            );
+          } catch (e) {
+            debugPrint("Ошибка загрузки изображения: $e");
+            hasErrors = true;
+            return false;
+          }
+        }
+      } else if (op.attributes != null && op.attributes!['link'] != null) {
+        // Обрабатываем файлы (ссылки)
+        final link = op.attributes!['link'];
+
+        if (link.startsWith('file://')) {
+          final filePath = link.replaceFirst('file://', '');
+
+          try {
+            final uploadedUrl = await uploadFileToServer(filePath, true);
+
+            // Обновляем ссылку в редакторе
+            _controller.formatText(
+              index,
+              opLength,
+              Attribute<String>('link', AttributeScope.inline, uploadedUrl),
+            );
+          } catch (e) {
+            debugPrint("Ошибка загрузки файла: $e");
+            hasErrors = true;
+            return false;
+          }
+        }
+      }
+
+      // Увеличиваем индекс на длину текущей операции
+      index += opLength;
+    }
+
+    _shouldDispose = true;
+    return true;
+  }
+
+
+  @override
+  Future<bool> replaceLocalImagesWithLinks() async {
+    _shouldDispose = false;
+    final delta = _controller.document.toDelta();
+    int index = 0;
+    bool hasErrors = false;
 
     for (var op in delta.toList()) {
       if (op.data is Map && (op.data as Map).containsKey('image')) {
@@ -301,6 +368,8 @@ class HtmlEditorController implements IHtmlEditorController {
             );
           } catch (e) {
             debugPrint("Ошибка загрузки изображения: $e");
+            hasErrors = true;
+            return false;
           }
         }
       }
@@ -308,15 +377,17 @@ class HtmlEditorController implements IHtmlEditorController {
       // Увеличиваем index на длину текущей операции
       index += op.length ?? 0;
     }
-    _shouldDispose = true;
-    //convertDeltaToHtml();
+    _shouldDispose = !hasErrors;
+    return true;
   }
 
   @override
-  Future<void> replaceLocalFilesWithLinks() async {
+  Future<bool> replaceLocalFilesWithLinks() async {
     _shouldDispose = false;
     final delta = _controller.document.toDelta();
     int currentOffset = 0;
+
+    bool hasErrors = false;
 
     for (var op in delta.toList()) {
       final opLength = op.length ?? op.data.toString().length;
@@ -338,6 +409,8 @@ class HtmlEditorController implements IHtmlEditorController {
             );
           } catch (e) {
             debugPrint("Ошибка загрузки файла: $e");
+            hasErrors = true;
+            return false;
           }
         }
       }
@@ -345,8 +418,8 @@ class HtmlEditorController implements IHtmlEditorController {
       // Увеличиваем текущую позицию на длину операции
       currentOffset += opLength;
     }
-    //convertDeltaToHtml();
-    _shouldDispose = true;
+    _shouldDispose = !hasErrors;
+    return true;
   }
 
   @override
@@ -546,5 +619,13 @@ class HtmlEditorController implements IHtmlEditorController {
   //     return 'class="ql-align-$alignValue"';
   //   });
   // }
+
+  bool _defaultValidateStatus(int? status) {
+    try {
+      return status != null && status >= 200 && status < 300;
+    } catch (_) {
+      return false;
+    }
+  }
 
 }
