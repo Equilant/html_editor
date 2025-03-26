@@ -12,6 +12,7 @@ class Editor extends StatefulWidget {
   final void Function(String content)? onContentChanged;
   final EditorColors? editorColors;
   final ThemeData? theme;
+  final String storageUrl;
 
   const Editor({
     this.html,
@@ -23,6 +24,7 @@ class Editor extends StatefulWidget {
     this.onContentChanged,
     this.editorColors,
     this.theme,
+    required this.storageUrl,
     super.key,
   });
 
@@ -37,10 +39,12 @@ class _EditorState extends State<Editor> {
   void initState() {
     _controller = widget.controller ??
         HtmlEditorController(
-            externalHtml: widget.html,
-            onContentChanged: widget.onContentChanged,
-            readOnly: widget.readOnly,
-            onControllerCreated: widget.onControllerCreated);
+          externalHtml: widget.html,
+          onContentChanged: widget.onContentChanged,
+          readOnly: widget.readOnly,
+          onControllerCreated: widget.onControllerCreated,
+          storageUrl: widget.storageUrl,
+        );
     super.initState();
   }
 

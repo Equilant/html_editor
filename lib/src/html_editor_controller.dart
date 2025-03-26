@@ -81,11 +81,14 @@ class HtmlEditorController implements IHtmlEditorController {
 
   bool _shouldDispose = true;
 
+  final String storageUrl;
+
   HtmlEditorController({
     this.externalHtml,
     this.onContentChanged,
     this.readOnly,
     this.onControllerCreated,
+    required this.storageUrl,
   }) {
     _controller = QuillController.basic(
         config: QuillControllerConfig(
@@ -106,9 +109,10 @@ class HtmlEditorController implements IHtmlEditorController {
         _keyboardVisibilityController.onChange.listen(_onKeyboardVisible);
 
     if (externalHtml?.isNotEmpty ?? false) {
+      String fixedHtml = convertHtmlAlignmentToQuill(externalHtml!);
       var delta = HtmlToDelta(
         shouldInsertANewLine: (_) => true,
-      ).convert(externalHtml!);
+      ).convert(fixedHtml);
 
       delta = fixDeltaSpacing(delta);
       _controller.document = Document.fromDelta(delta);
@@ -230,10 +234,12 @@ class HtmlEditorController implements IHtmlEditorController {
     }
   }
 
-  Future<String> uploadFileToServer(String localPath) async {
+  Future<String> uploadFileToServer(String localPath, bool isFile) async {
     final file = io.File(removeFilePrefix(localPath));
-    final uri = Uri.parse(
-        "https://local.dev.k8s.umschool.dev/froala_editor/file_upload/");
+
+    final path = isFile ? 'file_upload/' : 'image_upload/';
+
+    final uri = Uri.parse("$storageUrl$path");
 
     if (!file.existsSync()) {
       return '';
@@ -282,7 +288,7 @@ class HtmlEditorController implements IHtmlEditorController {
         if (localPath.startsWith('file://')) {
           // Локальный путь (без 'file://')
           try {
-            final uploadedUrl = await uploadFileToServer(localPath);
+            final uploadedUrl = await uploadFileToServer(localPath, false);
 
             // Заменяем локальный путь на ссылку в редакторе
             _controller.replaceText(
@@ -320,7 +326,7 @@ class HtmlEditorController implements IHtmlEditorController {
           final filePath = link.replaceFirst('file://', '');
 
           try {
-            final uploadedUrl = await uploadFileToServer(filePath);
+            final uploadedUrl = await uploadFileToServer(filePath, true);
 
             // Обновляем ссылку в редакторе
             _controller.formatText(
@@ -358,10 +364,10 @@ class HtmlEditorController implements IHtmlEditorController {
       }
 
       // Декодируем URL (убираем лишние кодировки)
-      final decodedUrl = Uri.decodeFull(url);
+      final encodedUrl = Uri.encodeFull(Uri.decodeFull(url));
       // Заменяем пробелы на %20 вручную
       // Обычная веб-ссылка
-      final uri = Uri.parse(decodedUrl);
+      final uri = Uri.parse(encodedUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       }
@@ -398,22 +404,6 @@ class HtmlEditorController implements IHtmlEditorController {
     }
     print(internalHtml);
   }
-
-  // @override
-  // Future<void> pickFile() async {
-  //   final ImagePicker picker = ImagePicker();
-  //   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-  //
-  //   if (image != null) await _insertImageIntoEditor(File(image.path));
-  //
-  // }
-  //
-  // Future<void> _insertImageIntoEditor(File file) async {
-  //   final uploadedUrl = await uploadImage(file); // Загружаем файл и получаем URL
-  //   final index = _controller.selection.baseOffset;
-  //
-  //   _controller.document.insert(index, BlockEmbed.image(uploadedUrl));
-  // }
 
   @override
   Future<void> pickImage(ImageSource imageSource) async {
@@ -530,4 +520,10 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   ScrollController get scrollController => _editorScrollController;
+
+  String convertHtmlAlignmentToQuill(String html) {
+    return html.replaceAllMapped(RegExp(r'class="ql-align-(\w+)"'), (match) {
+      return 'style="text-align: ${match.group(1)};"';
+    });
+  }
 }

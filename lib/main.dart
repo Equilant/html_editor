@@ -54,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Editor(readOnly: false),
+            Editor(readOnly: false, storageUrl: '',),
           ],
         ),
       ),
