@@ -135,6 +135,9 @@ class HtmlEditorController implements IHtmlEditorController {
     }
   }
 
+
+
+
   void _scrollToEditor() {
     final context = _editorKey.currentContext;
     if (context == null) return;
@@ -152,7 +155,7 @@ class HtmlEditorController implements IHtmlEditorController {
       context,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
-      alignment: 0.35,
+      alignment: 0.1,
     );
   }
 
