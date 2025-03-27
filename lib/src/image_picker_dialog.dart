@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:html_editor/editor.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:untitled100/editor.dart';
 
 class ImagePickerDialog {
   static Future<void> showDeletionImageDialog(

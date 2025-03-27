@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled100/editor.dart';
+import 'package:html_editor/editor.dart';
 
 class MenuDialog {
   static Future<void> showAlignmentMenu(

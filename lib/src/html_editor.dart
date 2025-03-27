@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
-import 'package:untitled100/editor.dart';
-import 'package:untitled100/src/editor_extensions.dart';
-import 'package:untitled100/src/theme/editor_text_style.dart';
-import 'package:untitled100/src/theme/editor_theme.dart';
-import 'package:untitled100/src/icons/app_icons.dart';
+import 'package:html_editor/editor.dart';
+import 'package:html_editor/src/html_editor_controller.dart';
 
 class HtmlEditor extends StatefulWidget {
   final IHtmlEditorController? controller;

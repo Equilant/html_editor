@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:untitled100/src/html_editor.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:html_editor/editor.dart';
 
 void main() {
   runApp(const MyApp());

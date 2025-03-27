@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled100/src/theme/editor_theme.dart';
-
-import '../editor.dart';
+import 'package:html_editor/editor.dart';
 
 extension ThemeContextGetter on BuildContext {
   EditorTheme get theme => EditorTheme.of(this);

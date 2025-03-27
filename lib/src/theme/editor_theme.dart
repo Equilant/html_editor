@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled100/src/theme/editor_colors.dart';
+import 'package:html_editor/src/theme/editor_colors.dart';
 
 class EditorTheme extends InheritedWidget {
   final Brightness brightness;
