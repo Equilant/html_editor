@@ -1,4 +1,4 @@
-library untitled100;
+library html_editor;
 
 export 'package:flutter_quill/flutter_quill.dart';
 export 'src/html_editor.dart';
