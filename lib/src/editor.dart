@@ -35,8 +35,6 @@ class Editor extends StatefulWidget {
 class _EditorState extends State<Editor> {
   late final IHtmlEditorController _controller;
 
-  final GlobalKey _alignmentIconKey = GlobalKey();
-
   @override
   void initState() {
     _controller = widget.controller ??
@@ -99,13 +97,15 @@ class _EditorState extends State<Editor> {
                         ),
                         QuillToolbarCustomButtonOptions(
                             icon: Icon(
-                              key: _alignmentIconKey,
+                              key: _controller.alignmentIconKey,
                               Icons.format_align_justify_outlined,
                               color: widget.readOnly ? Colors.grey : null,
                             ),
                             onPressed: () async => MenuDialog.showAlignmentMenu(
-                                context, _controller, widget.editorColors,
-                                _alignmentIconKey))
+                                context,
+                                _controller,
+                                widget.editorColors,
+                                _controller.alignmentIconKey))
                       ],
                       toolbarIconAlignment: WrapAlignment.start,
                       embedButtons: FlutterQuillEmbeds.toolbarButtons(

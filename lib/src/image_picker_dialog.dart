@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:untitled100/html_editor.dart';
-import 'package:untitled100/src/html_editor_controller.dart';
 
 class ImagePickerDialog {
   static Future<void> showDeletionImageDialog(
@@ -30,8 +29,8 @@ class ImagePickerDialog {
   static Future<void> showImagePickerDialog(
     BuildContext context,
     IHtmlEditorController controller,
-      EditorColors? editorColors,
-      ) async {
+    EditorColors? editorColors,
+  ) async {
     await _showDialog(
       context,
       editorColors: editorColors,
@@ -62,8 +61,11 @@ class ImagePickerDialog {
     );
   }
 
-  static Future<void> _showDialog(BuildContext context,
-      {required List<Widget> children, EditorColors? editorColors,}) async {
+  static Future<void> _showDialog(
+    BuildContext context, {
+    required List<Widget> children,
+    EditorColors? editorColors,
+  }) async {
     await showModalBottomSheet(
       context: context,
       backgroundColor: editorColors?.backgroundColor,
