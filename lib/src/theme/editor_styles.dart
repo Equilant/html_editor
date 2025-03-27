@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/internal.dart';
 
 class EditorStyles {
-  static DefaultStyles getInstance(BuildContext context, ThemeData? theme) {
-    final themeData = theme ?? Theme.of(context);
+  static DefaultStyles getInstance(BuildContext context) {
+    final themeData = Theme.of(context);
     final defaultTextStyle = DefaultTextStyle.of(context);
     final baseStyle = defaultTextStyle.style.copyWith(
       fontSize: 16,
@@ -13,8 +12,7 @@ class EditorStyles {
     );
     const baseHorizontalSpacing = HorizontalSpacing(0, 0);
     const baseVerticalSpacing = VerticalSpacing(6, 0);
-    final fontFamily = themeData.textTheme.bodySmall?.fontFamily ??
-        (themeData.isCupertino ? 'Menlo' : 'Roboto Mono');
+    final fontFamily = 'CoFoGothic';
 
     final inlineCodeStyle = TextStyle(
       fontSize: 14,
@@ -218,8 +216,9 @@ class EditorStyles {
             fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
       ),
       link: TextStyle(
-        color: Colors.blueAccent,
+        color: Colors.blueAccent.shade700,
         decoration: TextDecoration.underline,
+        decorationColor: Colors.blueAccent.shade700,
         fontFamily: fontFamily,
       ),
       placeHolder: DefaultTextBlockStyle(

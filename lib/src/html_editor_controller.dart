@@ -21,16 +21,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:image/image.dart' as img;
 
-enum HtmlAlignmentType {
-  left('слева'),
-  right('справа'),
-  center('по центру'),
-  justify('по ширине');
-
-  final String title;
-
-  const HtmlAlignmentType(this.title);
-}
+enum HtmlAlignmentType { left, right, center, justify }
 
 abstract interface class IHtmlEditorController {
   void dispose();
@@ -50,7 +41,9 @@ abstract interface class IHtmlEditorController {
   Future<void> pickImage(ImageSource imageSource);
 
   ImageProvider<Object>? imageProviderBuilder(
-      BuildContext context, String path);
+    BuildContext context,
+    String path,
+  );
 
   void deleteImage(String imageUrl);
 
@@ -86,9 +79,9 @@ class HtmlEditorController implements IHtmlEditorController {
 
   bool _shouldDispose = true;
 
-  final String storageUrl;
-
   final GlobalKey _alignmentIconKey = GlobalKey();
+
+  final String storageUrl;
 
   HtmlEditorController({
     this.externalHtml,
@@ -98,12 +91,13 @@ class HtmlEditorController implements IHtmlEditorController {
     required this.storageUrl,
   }) {
     _controller = QuillController.basic(
-        config: QuillControllerConfig(
-      clipboardConfig: QuillClipboardConfig(
-        enableExternalRichPaste: true,
-        onImagePaste: onImagePasteHandler,
+      config: QuillControllerConfig(
+        clipboardConfig: QuillClipboardConfig(
+          enableExternalRichPaste: true,
+          onImagePaste: onImagePasteHandler,
+        ),
       ),
-    ));
+    );
 
     _editorKey = GlobalKey();
     _editorFocusNode = FocusNode();
@@ -116,7 +110,7 @@ class HtmlEditorController implements IHtmlEditorController {
         _keyboardVisibilityController.onChange.listen(_onKeyboardVisible);
 
     if (externalHtml?.isNotEmpty ?? false) {
-      String parsedHtml = convertHtml(externalHtml!);
+      final String parsedHtml = convertHtml(externalHtml!);
       var delta = HtmlToDelta(
         shouldInsertANewLine: (_) => true,
       ).convert(parsedHtml);
@@ -173,8 +167,8 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   Delta fixDeltaSpacing(Delta delta) {
-    Delta newDelta = Delta();
-    for (var op in delta.toList()) {
+    final Delta newDelta = Delta();
+    for (final op in delta.toList()) {
       newDelta.push(op);
       if (op.data is String && (op.data as String).trim().isEmpty) {
         newDelta.push(Operation.insert('\n'));
@@ -186,8 +180,9 @@ class HtmlEditorController implements IHtmlEditorController {
   @override
   void dispose() {
     if (_shouldDispose) {
-      _controller.removeListener(convertDeltaToHtml);
-      _controller.dispose();
+      _controller
+        ..removeListener(convertDeltaToHtml)
+        ..dispose();
       _editorScrollController.dispose();
       _editorFocusNode.dispose();
       _keyboardSubscription?.cancel();
@@ -215,7 +210,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   Future<void> insertFileFromStorage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    final FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
       final fileName = file.name;
@@ -234,7 +229,10 @@ class HtmlEditorController implements IHtmlEditorController {
           index,
           fileName.length,
           Attribute<String>(
-              'link', AttributeScope.inline, 'file://${localFile.path}'),
+            'link',
+            AttributeScope.inline,
+            'file://${localFile.path}',
+          ),
         );
       }
     }
@@ -252,11 +250,13 @@ class HtmlEditorController implements IHtmlEditorController {
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
 
     final request = http.MultipartRequest('POST', uri)
-      ..files.add(await http.MultipartFile.fromPath(
-        'file',
-        file.path,
-        contentType: _getMediaType(mimeType),
-      ))
+      ..files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          file.path,
+          contentType: _getMediaType(mimeType),
+        ),
+      )
       ..headers['Content-Type'] = mimeType;
 
     final response = await request.send();
@@ -283,7 +283,7 @@ class HtmlEditorController implements IHtmlEditorController {
     final delta = _controller.document.toDelta();
     int index = 0;
 
-    for (var op in delta.toList()) {
+    for (final op in delta.toList()) {
       final opLength = op.length ?? op.data.toString().length;
 
       if (op.data is Map && (op.data as Map).containsKey('image')) {
@@ -338,7 +338,7 @@ class HtmlEditorController implements IHtmlEditorController {
     final delta = _controller.document.toDelta();
     int index = 0;
 
-    for (var op in delta.toList()) {
+    for (final op in delta.toList()) {
       if (op.data is Map && (op.data as Map).containsKey('image')) {
         final localPath = (op.data as Map)['image'];
 
@@ -371,7 +371,7 @@ class HtmlEditorController implements IHtmlEditorController {
     final delta = _controller.document.toDelta();
     int currentOffset = 0;
 
-    for (var op in delta.toList()) {
+    for (final op in delta.toList()) {
       final opLength = op.length ?? op.data.toString().length;
 
       if (op.attributes != null && op.attributes!['link'] != null) {
@@ -497,9 +497,11 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   ImageProvider<Object>? imageProviderBuilder(
-      BuildContext context, String path) {
+    BuildContext context,
+    String path,
+  ) {
     if (path.startsWith('file:/')) {
-      String cleanedPath = removeFilePrefix(path);
+      final String cleanedPath = removeFilePrefix(path);
       return FileImage(io.File(cleanedPath));
     }
     return null;
@@ -517,7 +519,7 @@ class HtmlEditorController implements IHtmlEditorController {
     final delta = _controller.document.toDelta();
     int index = 0;
 
-    for (var op in delta.toList()) {
+    for (final op in delta.toList()) {
       if (op.data is Map && (op.data as Map).containsKey('image')) {
         final localPath = (op.data as Map)['image'];
 
@@ -542,7 +544,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   void setAlignment(HtmlAlignmentType align) {
-    final attribute = quill.Attribute.align;
+    const attribute = quill.Attribute.align;
 
     _controller.formatSelection(
       align == HtmlAlignmentType.left
@@ -561,13 +563,14 @@ class HtmlEditorController implements IHtmlEditorController {
   ScrollController get scrollController => _editorScrollController;
 
   String convertHtml(String html) {
-    html = html.replaceAllMapped(RegExp(r'class="ql-align-(\w+)"'), (match) {
+    final parsedHtml =
+        html.replaceAllMapped(RegExp(r'class="ql-align-(\w+)"'), (match) {
       return 'style="text-align: ${match.group(1)};"';
     });
 
-    html = html.replaceAll(RegExp(r'<br>\s*</p>'), '</p>');
+    final updatedHtml = parsedHtml.replaceAll(RegExp(r'<br>\s*</p>'), '</p>');
 
-    return html;
+    return updatedHtml;
   }
 
   bool _defaultValidateStatus(int? status) {

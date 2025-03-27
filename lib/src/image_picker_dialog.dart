@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:untitled100/html_editor.dart';
+import 'package:untitled100/editor.dart';
 
 class ImagePickerDialog {
   static Future<void> showDeletionImageDialog(
     BuildContext context,
     String imageUrl,
     IHtmlEditorController controller,
-    EditorColors? editorColors,
   ) async {
     await _showDialog(
       context,
-      editorColors: editorColors,
       children: [
         _buildListTile(
           title: 'Удалить изображение',
-          icon: Icons.delete,
-          iconColor: Colors.red,
+          icon: AppIcons.trash,
+          iconColor: context.theme.red800,
           onTap: () {
             if (context.mounted) Navigator.of(context).pop();
             controller.deleteImage(imageUrl);
@@ -29,29 +27,36 @@ class ImagePickerDialog {
   static Future<void> showImagePickerDialog(
     BuildContext context,
     IHtmlEditorController controller,
-    EditorColors? editorColors,
   ) async {
     await _showDialog(
       context,
-      editorColors: editorColors,
       children: [
-        const Text(
+        Text(
           'Добавить изображение',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          style: AppTextStyle.headlineH18Medium
+              .copyWith(color: context.theme.gray800),
         ),
         const SizedBox(height: 16),
         _buildListTile(
           title: 'Сделать фото',
-          icon: Icons.camera_alt,
+          icon: AppIcons.camera,
+          iconColor: context.theme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
             await controller.pickImage(ImageSource.camera);
           },
         ),
-        const Divider(height: 0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Divider(
+            height: 0,
+            color: context.theme.gray100,
+          ),
+        ),
         _buildListTile(
           title: 'Выбрать изображение',
-          icon: Icons.image,
+          icon: AppIcons.gallery,
+          iconColor: context.theme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
             await controller.pickImage(ImageSource.gallery);
@@ -64,11 +69,10 @@ class ImagePickerDialog {
   static Future<void> _showDialog(
     BuildContext context, {
     required List<Widget> children,
-    EditorColors? editorColors,
   }) async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: editorColors?.backgroundColor,
+      backgroundColor: context.theme.bg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -100,7 +104,10 @@ class ImagePickerDialog {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      title: Text(title,
+          style: AppTextStyle.headlineH18Regular.copyWith(
+            color: iconColor,
+          )),
       trailing: Icon(icon, color: iconColor),
       onTap: onTap,
     );
