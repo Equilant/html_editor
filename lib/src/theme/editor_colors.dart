@@ -9,6 +9,7 @@ class EditorColors {
   static const Color gray800 = Color.fromRGBO(0, 0, 0, 1);
   static const Color gray700 = Color.fromRGBO(51, 51, 51, 1);
   static const Color gray500 = Color.fromRGBO(112, 112, 112, 1);
+  static const Color gray400 = Color.fromRGBO(173, 173, 173, 1);
   static const Color gray100 = Color.fromRGBO(230, 230, 230, 1);
   static const Color gray0 = Color.fromRGBO(255, 255, 255, 1);
 
@@ -27,6 +28,7 @@ class EditorColors {
   static const Color gray800Dark = Color.fromRGBO(246, 246, 246, 1);
   static const Color gray700Dark = Color.fromRGBO(208, 208, 208, 1);
   static const Color gray500Dark = Color.fromRGBO(160, 160, 160, 1);
+  static const Color gray400Dark = Color.fromRGBO(125, 125, 125, 1);
   static const Color gray100Dark = Color.fromRGBO(89, 89, 89, 1);
   static const Color gray0Dark = Color.fromRGBO(18, 18, 18, 1);
 

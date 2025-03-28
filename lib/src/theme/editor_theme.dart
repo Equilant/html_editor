@@ -22,6 +22,8 @@ class EditorTheme extends InheritedWidget {
 
   Color get gray500 => isDark ? EditorColors.gray500Dark : EditorColors.gray500;
 
+  Color get gray400 => isDark ? EditorColors.gray400Dark : EditorColors.gray400;
+
   Color get gray100 => isDark ? EditorColors.gray100Dark : EditorColors.gray100;
 
   Color get gray0 => isDark ? EditorColors.gray0Dark : EditorColors.gray0;

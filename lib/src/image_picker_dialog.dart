@@ -36,7 +36,7 @@ class ImagePickerDialog {
           style: AppTextStyle.headlineH18Medium
               .copyWith(color: context.theme.gray800),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         _buildListTile(
           title: 'Сделать фото',
           icon: AppIcons.camera,
@@ -83,10 +83,10 @@ class ImagePickerDialog {
             const SizedBox(height: 16),
             Container(
               width: MediaQuery.of(context).size.width / 6,
-              height: 4,
+              height: 5,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                color: Colors.grey.withOpacity(0.5),
+                color: Colors.grey.withOpacity(0.3),
               ),
             ),
             const SizedBox(height: 16),
@@ -104,6 +104,7 @@ class ImagePickerDialog {
     required VoidCallback onTap,
   }) {
     return ListTile(
+      minTileHeight: 80,
       title: Text(title,
           style: AppTextStyle.headlineH18Regular.copyWith(
             color: iconColor,

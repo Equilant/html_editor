@@ -67,6 +67,35 @@ class _HtmlEditorState extends State<HtmlEditor> {
             textSelectionTheme: TextSelectionThemeData(
               cursorColor: context.theme.generalGray700,
             ),
+            dialogTheme: DialogTheme(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              backgroundColor: context.theme.bg,
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              enabledBorder: UnderlineInputBorder(
+                borderSide:
+                    BorderSide(color: context.theme.gray800, width: 0.5),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: context.theme.gray800,
+                ),
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.resolveWith<Color>(
+                  (states) {
+                    if (states.contains(MaterialState.disabled)) {
+                      return context.theme.gray400;
+                    }
+                    return context.theme.gray800;
+                  },
+                ),
+              ),
+            ),
           ),
           child: Column(
             children: [
@@ -86,7 +115,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                         config: QuillSimpleToolbarConfig(
                           customButtons: [
                             QuillToolbarCustomButtonOptions(
-                              icon: Icon(Icons.attach_file,
+                              icon: Icon(AppIcons.addFileBold,
                                   color: widget.readOnly
                                       ? context.theme.gray500
                                       : context.theme.generalGray700),
@@ -95,7 +124,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                             ),
                             QuillToolbarCustomButtonOptions(
                               icon: Icon(
-                                AppIcons.gallery,
+                                AppIcons.imageBold,
                                 color: widget.readOnly
                                     ? context.theme.gray500
                                     : context.theme.generalGray700,
@@ -151,6 +180,12 @@ class _HtmlEditorState extends State<HtmlEditor> {
                           buttonOptions: QuillSimpleToolbarButtonOptions(
                             base: QuillToolbarBaseButtonOptions(
                               iconTheme: QuillIconTheme(
+                                iconButtonSelectedData: IconButtonData(
+                                    color: Colors.white,
+                                    style: ButtonStyle(
+                                        backgroundColor:
+                                            WidgetStateProperty.all<Color>(
+                                                context.theme.generalGray800))),
                                 iconButtonUnselectedData: IconButtonData(
                                   color: widget.readOnly
                                       ? context.theme.gray500
@@ -167,17 +202,17 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                 ),
                               ),
                               dialogTheme: QuillDialogTheme(
-                                  dialogBackgroundColor: context.theme.bg,
-                                  labelTextStyle: AppTextStyle.textT14Regular
-                                      .copyWith(color: context.theme.gray800),
-                                  inputTextStyle:
-                                      AppTextStyle.textT14Regular.copyWith(
-                                    color: context.theme.gray800,
-                                  ),
-                                  buttonTextStyle:
-                                      AppTextStyle.textT14Regular.copyWith(
-                                    color: context.theme.gray800,
-                                  )),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                dialogBackgroundColor: context.theme.bg,
+                                labelTextStyle: AppTextStyle.textT14Regular
+                                    .copyWith(color: context.theme.gray800),
+                                inputTextStyle:
+                                    AppTextStyle.textT14Regular.copyWith(
+                                  color: context.theme.gray800,
+                                ),
+                              ),
                             ),
                           ),
                         ),
