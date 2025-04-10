@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
 import 'package:html_editor/src/html_editor_controller.dart';
+import 'package:html_editor/src/icons/html_icons.dart';
 
 class HtmlEditor extends StatefulWidget {
   final IHtmlEditorController? controller;
@@ -115,20 +117,21 @@ class _HtmlEditorState extends State<HtmlEditor> {
                         config: QuillSimpleToolbarConfig(
                           customButtons: [
                             QuillToolbarCustomButtonOptions(
-                              icon: Icon(AppIcons.addFileBold,
-                                  color: widget.readOnly
-                                      ? context.theme.gray500
-                                      : context.theme.generalGray700),
+                              icon: SvgPicture.asset(
+                                HtmlIcons.clipBold,
+                                color: widget.readOnly
+                                    ? context.theme.gray500
+                                    : context.theme.generalGray700,
+                              ),
                               onPressed: () async =>
                                   await _controller.insertFileFromStorage(),
                             ),
                             QuillToolbarCustomButtonOptions(
-                              icon: Icon(
-                                AppIcons.imageBold,
+                              icon: SvgPicture.asset(
+                                HtmlIcons.galleryBold,
                                 color: widget.readOnly
                                     ? context.theme.gray500
                                     : context.theme.generalGray700,
-                                size: 24,
                               ),
                               onPressed: () async =>
                                   await ImagePickerDialog.showImagePickerDialog(

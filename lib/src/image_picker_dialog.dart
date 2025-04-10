@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
+import 'package:html_editor/src/icons/html_icons.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImagePickerDialog {
@@ -13,7 +15,7 @@ class ImagePickerDialog {
       children: [
         _buildListTile(
           title: 'Удалить изображение',
-          icon: AppIcons.trash,
+          icon: HtmlIcons.delete,
           iconColor: context.theme.red800,
           onTap: () {
             if (context.mounted) Navigator.of(context).pop();
@@ -39,7 +41,7 @@ class ImagePickerDialog {
         const SizedBox(height: 12),
         _buildListTile(
           title: 'Сделать фото',
-          icon: AppIcons.camera,
+          icon: HtmlIcons.camera,
           iconColor: context.theme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
@@ -55,7 +57,7 @@ class ImagePickerDialog {
         ),
         _buildListTile(
           title: 'Выбрать изображение',
-          icon: AppIcons.gallery,
+          icon: HtmlIcons.gallery,
           iconColor: context.theme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
@@ -99,7 +101,7 @@ class ImagePickerDialog {
 
   static Widget _buildListTile({
     required String title,
-    required IconData icon,
+    required String icon,
     Color? iconColor,
     required VoidCallback onTap,
   }) {
@@ -109,7 +111,7 @@ class ImagePickerDialog {
           style: AppTextStyle.headlineH18Regular.copyWith(
             color: iconColor,
           )),
-      trailing: Icon(icon, color: iconColor),
+      trailing: SvgPicture.asset(icon, color: iconColor),
       onTap: onTap,
     );
   }
