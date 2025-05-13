@@ -58,6 +58,8 @@ abstract interface class IHtmlEditorController {
   Future<bool> replaceLocalMediaWithLinks();
 
   GlobalKey get alignmentIconKey;
+
+  Future<void> scrollToEditor();
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -122,48 +124,75 @@ class HtmlEditorController implements IHtmlEditorController {
     _controller.addListener(convertDeltaToHtml);
   }
 
-  void _onKeyboardVisible(bool isVisible) {
-    if (isVisible && _editorKey.currentContext != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!isWidgetVisible(_editorKey)) {
-          _scrollToEditor();
-        }
-      });
-    }
+  bool isWidgetVisible(GlobalKey key) {
+    final context = key.currentContext;
+    if (context == null) return false;
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return false;
+
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final height = renderBox.size.height;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final visibleBottom = screenHeight - keyboardHeight;
+    
+    return offset.dy + height <= visibleBottom;
   }
 
-  void _scrollToEditor() {
+  @override
+  Future<void> scrollToEditor() async {
     final context = _editorKey.currentContext;
     if (context == null) return;
 
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final editorPosition = renderBox.localToGlobal(Offset.zero).dy;
-
-    final targetOffset = editorPosition - (screenHeight - keyboardHeight - 16);
-
-    Scrollable.ensureVisible(
+    await Future.delayed(const Duration(milliseconds: 100));
+    await Scrollable.ensureVisible(
       context,
+      alignment: 0.0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
-      alignment: 0.1,
     );
   }
 
-  bool isWidgetVisible(GlobalKey key) {
-    final RenderObject? renderObject = key.currentContext?.findRenderObject();
-    if (renderObject is RenderBox) {
-      final RenderAbstractViewport viewport =
-          RenderAbstractViewport.of(renderObject);
-      final RevealedOffset offset =
-          viewport.getOffsetToReveal(renderObject, 0.5);
+  void _onKeyboardVisible(bool isVisible) {
+    if (!isVisible) return;
 
-      return offset.offset < 50;
-    }
-    return false;
+    _waitForKeyboardAndScroll();
+  }
+
+  void _waitForKeyboardAndScroll() async {
+    final context = _editorKey.currentContext;
+
+    if (context == null) return;
+
+    await WidgetsBinding.instance.endOfFrame;
+
+    scrollToEditor();
+  }
+
+  bool isWidgetCoveredByKeyboard(GlobalKey key) {
+    final context = key.currentContext;
+    if (context == null) return false;
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return false;
+
+    final editorOffset = renderBox.localToGlobal(Offset.zero);
+    final editorHeight = renderBox.size.height;
+    final editorBottom = editorOffset.dy + editorHeight;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final visibleBottom = screenHeight - keyboardHeight;
+
+    debugPrint(
+        'editorBottom: $editorBottom, visibleBottom: $visibleBottom, keyboardHeight: $keyboardHeight');
+
+    return editorBottom > visibleBottom;
   }
 
   Delta fixDeltaSpacing(Delta delta) {
