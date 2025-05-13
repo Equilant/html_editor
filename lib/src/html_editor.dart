@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
-import 'package:html_editor/src/html_editor_controller.dart';
-import 'package:html_editor/src/icons/html_icons.dart';
+import 'package:html_editor/src/link_dialog.dart';
 
 class HtmlEditor extends StatefulWidget {
   final IHtmlEditorController? controller;
@@ -154,6 +153,17 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                 _controller.alignmentIconKey,
                               ),
                             ),
+                            QuillToolbarCustomButtonOptions(
+                              icon: Icon(
+                                Icons.link,
+                                color: widget.readOnly
+                                    ? context.theme.gray500
+                                    : context.theme.generalGray700,
+                              ),
+                              onPressed: () async =>
+                                  await LinkDialog.showCustomLinkDialog(
+                                      context, _controller.quillController),
+                            ),
                           ],
                           toolbarIconAlignment: WrapAlignment.start,
                           embedButtons: FlutterQuillEmbeds.toolbarButtons(
@@ -177,6 +187,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                           showQuote: false,
                           showIndent: false,
                           showRedo: false,
+                          showLink: false,
                           showSearchButton: false,
                           showClipboardCut: false,
                           showClipboardCopy: false,

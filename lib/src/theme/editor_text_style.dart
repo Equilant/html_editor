@@ -50,6 +50,12 @@ class AppTextStyle {
     fontSize: fontSize24,
   );
 
+  static TextStyle headlineH24Regular = TextStyle(
+    fontFamily: _fontFamily(CoFoGothicFontType.regular),
+    fontWeight: regular,
+    fontSize: fontSize24,
+  );
+
   static TextStyle headlineH18Medium = TextStyle(
     fontFamily: _fontFamily(CoFoGothicFontType.medium),
     fontWeight: medium,
