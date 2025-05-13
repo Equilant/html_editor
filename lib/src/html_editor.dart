@@ -233,6 +233,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                         placeholder: 'Напишите что-нибудь...',
                         customStyles: EditorStyles.getInstance(context),
                         padding: const EdgeInsets.all(16),
+                        showCursor: !widget.readOnly,
                         embedBuilders: [
                           ...FlutterQuillEmbeds.editorBuilders(
                             imageEmbedConfig: QuillEditorImageEmbedConfig(
