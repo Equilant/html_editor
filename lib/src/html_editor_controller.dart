@@ -137,7 +137,7 @@ class HtmlEditorController implements IHtmlEditorController {
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final visibleBottom = screenHeight - keyboardHeight;
-    
+
     return offset.dy + height <= visibleBottom;
   }
 
@@ -150,12 +150,29 @@ class HtmlEditorController implements IHtmlEditorController {
     if (renderBox == null) return;
 
     await Future.delayed(const Duration(milliseconds: 100));
-    await Scrollable.ensureVisible(
-      context,
-      alignment: 0.0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final visibleHeight = screenHeight - keyboardHeight;
+
+    final editorHeight = renderBox.size.height;
+    final editorOffset = renderBox.localToGlobal(Offset.zero);
+
+    if (editorHeight > visibleHeight) {
+      await Scrollable.ensureVisible(
+        context,
+        alignment: 1.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else {
+      await Scrollable.ensureVisible(
+        context,
+        alignment: 0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _onKeyboardVisible(bool isVisible) {
