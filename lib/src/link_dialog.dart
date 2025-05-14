@@ -80,8 +80,13 @@ class LinkDialog {
                           ? context.theme.gray800
                           : context.theme.gray400),
                 ),
-                child: const Text('Добавить'),
-                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Ок'),
+                onPressed: () {
+                  if (nameController.text.isNotEmpty &&
+                      linkController.text.isNotEmpty) {
+                    Navigator.pop(context, true);
+                  }
+                },
               ),
             ],
           );

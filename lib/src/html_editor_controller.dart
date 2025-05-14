@@ -505,26 +505,19 @@ class HtmlEditorController implements IHtmlEditorController {
     final XFile? image = await picker.pickImage(source: imageSource);
 
     if (image != null) {
-      final filePath = image.path;
-
       try {
+        final bytes = await image.readAsBytes();
+
+        if (bytes.isEmpty) {
+          debugPrint("❌ Получен пустой файл изображения");
+          return;
+        }
+
         final directory = await getTemporaryDirectory();
-        final newPath = path.join(directory.path, path.basename(filePath));
+        final newPath = path.join(directory.path, path.basename(image.path));
+        final file = await io.File(newPath).writeAsBytes(bytes);
 
-        final originalFile = io.File(filePath);
-        if (!await originalFile.exists()) {
-          debugPrint("Файл не найден: $filePath");
-          return;
-        }
-
-        final localFile = await originalFile.copy(newPath);
-
-        if (!await localFile.exists()) {
-          debugPrint("Ошибка копирования файла: $newPath");
-          return;
-        }
-
-        final localImagePath = 'file://${localFile.path}';
+        final localImagePath = 'file://${file.path}';
 
         final index = _controller.selection.baseOffset;
         _controller.document.insert(index, BlockEmbed.image(localImagePath));
@@ -534,12 +527,15 @@ class HtmlEditorController implements IHtmlEditorController {
           ChangeSource.local,
         );
 
-        debugPrint("Изображение успешно вставлено: $localImagePath");
+        debugPrint("✅ Изображение успешно вставлено: $localImagePath");
       } catch (e) {
-        debugPrint("Ошибка вставки изображения: $e");
+        debugPrint("❌ Ошибка вставки изображения: $e");
       }
     }
   }
+
+
+
 
   @override
   ImageProvider<Object>? imageProviderBuilder(
