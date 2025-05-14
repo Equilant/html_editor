@@ -17,7 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
-import 'dart:io' as io show File;
+import 'dart:io' as io;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -519,17 +519,20 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   Future<void> pickImage(ImageSource imageSource, BuildContext context) async {
-    final permission = imageSource == ImageSource.camera
-        ? Permission.camera
-        : Permission.photos;
+    if (io.Platform.isIOS) {
+      final permission = imageSource == ImageSource.camera
+          ? Permission.camera
+          : Permission.photos;
 
-    final status = await permission.status;
+      final status = await permission.status;
 
-    if (status.isDenied || status.isRestricted) {
-      await permission.request();
+      if (status.isDenied || status.isRestricted) {
+        final result = await permission.request();
 
-      if (status.isPermanentlyDenied) {
-        debugPrint('Разрешение отклонено');
+        if (!result.isGranted) {
+          return;
+        }
+      } else if (status.isPermanentlyDenied) {
         await PermissionsDialog.showPermissionDialog(context);
         return;
       }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
+import 'package:html_editor/src/link_action_delegate.dart';
 import 'package:html_editor/src/link_dialog.dart';
 
 class HtmlEditor extends StatefulWidget {
@@ -122,8 +123,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                     ? context.theme.gray500
                                     : context.theme.generalGray700,
                               ),
-                              onPressed: () async =>
-                                  await _controller.insertFileFromStorage(context),
+                              onPressed: () async => await _controller
+                                  .insertFileFromStorage(context),
                             ),
                             QuillToolbarCustomButtonOptions(
                               icon: SvgPicture.asset(
@@ -237,6 +238,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                       scrollController: _controller.scrollController,
                       controller: _controller.quillController,
                       config: QuillEditorConfig(
+                        linkActionPickerDelegate:
+                            LinkActionDelegate.customLinkActionPickerDelegate,
                         onLaunchUrl: (link) async =>
                             await _controller.openFileOrLink(link),
                         maxHeight: widget.maxHeight,
