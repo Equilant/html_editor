@@ -250,6 +250,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                             imageEmbedConfig: QuillEditorImageEmbedConfig(
                               imageProviderBuilder:
                                   _controller.imageProviderBuilder,
+                              // imageErrorWidgetBuilder: (context, _,__) =>
+                              // Text('Не удалось загрузить картинку...'),
                               onImageClicked: (imageUrl) async {
                                 if (!_controller.quillController.readOnly) {
                                   await ImagePickerDialog

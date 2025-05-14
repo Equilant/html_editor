@@ -45,7 +45,7 @@ class ImagePickerDialog {
           iconColor: context.theme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
-            await controller.pickImage(ImageSource.camera);
+            await controller.pickImage(ImageSource.camera, context);
           },
         ),
         Padding(
@@ -61,7 +61,7 @@ class ImagePickerDialog {
           iconColor: context.theme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
-            await controller.pickImage(ImageSource.gallery);
+            await controller.pickImage(ImageSource.gallery, context);
           },
         ),
       ],

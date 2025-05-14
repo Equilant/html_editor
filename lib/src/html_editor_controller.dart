@@ -7,11 +7,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
+import 'package:html_editor/src/permissions_dialog.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
@@ -38,7 +40,7 @@ abstract interface class IHtmlEditorController {
 
   Future<bool> replaceLocalImagesWithLinks();
 
-  Future<void> pickImage(ImageSource imageSource);
+  Future<void> pickImage(ImageSource imageSource, BuildContext context);
 
   ImageProvider<Object>? imageProviderBuilder(
     BuildContext context,
@@ -269,7 +271,7 @@ class HtmlEditorController implements IHtmlEditorController {
         final localFile = await io.File(filePath).copy(newPath);
 
         final index = _controller.selection.baseOffset;
-        
+
         _controller.document.insert(index, '\n');
 
         _controller.document.insert(index + 1, fileName);
@@ -299,8 +301,6 @@ class HtmlEditorController implements IHtmlEditorController {
       }
     }
   }
-
-
 
   Future<String> uploadFileToServer(String localPath, bool isFile) async {
     final file = io.File(removeFilePrefix(localPath));
@@ -518,7 +518,23 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   @override
-  Future<void> pickImage(ImageSource imageSource) async {
+  Future<void> pickImage(ImageSource imageSource, BuildContext context) async {
+    final permission = imageSource == ImageSource.camera
+        ? Permission.camera
+        : Permission.photos;
+
+    final status = await permission.status;
+
+    if (status.isDenied || status.isRestricted) {
+      final result = await permission.request();
+
+      if (!result.isGranted || status.isPermanentlyDenied) {
+        debugPrint('Разрешение отклонено');
+        await PermissionsDialog.showPermissionDialog(context);
+        return;
+      }
+    }
+
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: imageSource);
 
@@ -527,7 +543,7 @@ class HtmlEditorController implements IHtmlEditorController {
         final bytes = await image.readAsBytes();
 
         if (bytes.isEmpty) {
-          debugPrint("❌ Получен пустой файл изображения");
+          debugPrint("Получен пустой файл изображения");
           return;
         }
 
@@ -540,10 +556,8 @@ class HtmlEditorController implements IHtmlEditorController {
         final index = _controller.selection.baseOffset;
 
         _controller.document.insert(index, '\n');
-
         _controller.document
             .insert(index + 1, BlockEmbed.image(localImagePath));
-
         _controller.document.insert(index + 2, '\n');
 
         _controller.updateSelection(
@@ -551,9 +565,9 @@ class HtmlEditorController implements IHtmlEditorController {
           ChangeSource.local,
         );
 
-        debugPrint("✅ Изображение успешно вставлено: $localImagePath");
+        debugPrint("Изображение успешно вставлено: $localImagePath");
       } catch (e) {
-        debugPrint("❌ Ошибка вставки изображения: $e");
+        debugPrint("Ошибка вставки изображения: $e");
       }
     }
   }
