@@ -526,9 +526,9 @@ class HtmlEditorController implements IHtmlEditorController {
     final status = await permission.status;
 
     if (status.isDenied || status.isRestricted) {
-      final result = await permission.request();
+      await permission.request();
 
-      if (!result.isGranted || status.isPermanentlyDenied) {
+      if (status.isPermanentlyDenied) {
         debugPrint('Разрешение отклонено');
         await PermissionsDialog.showPermissionDialog(context);
         return;
