@@ -520,10 +520,16 @@ class HtmlEditorController implements IHtmlEditorController {
         final localImagePath = 'file://${file.path}';
 
         final index = _controller.selection.baseOffset;
-        _controller.document.insert(index, BlockEmbed.image(localImagePath));
+
+        _controller.document.insert(index, '\n');
+
+        _controller.document
+            .insert(index + 1, BlockEmbed.image(localImagePath));
+
+        _controller.document.insert(index + 2, '\n');
 
         _controller.updateSelection(
-          TextSelection.collapsed(offset: index + 1),
+          TextSelection.collapsed(offset: index + 3),
           ChangeSource.local,
         );
 
@@ -533,9 +539,6 @@ class HtmlEditorController implements IHtmlEditorController {
       }
     }
   }
-
-
-
 
   @override
   ImageProvider<Object>? imageProviderBuilder(
