@@ -30,7 +30,7 @@ abstract interface class IHtmlEditorController {
 
   void convertDeltaToHtml();
 
-  Future<void> insertFileFromStorage();
+  Future<void> insertFileFromStorage(BuildContext context);
 
   Future<void> openFileOrLink(String url);
 
@@ -255,8 +255,9 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   @override
-  Future<void> insertFileFromStorage() async {
+  Future<void> insertFileFromStorage(BuildContext context) async {
     final FilePickerResult? result = await FilePicker.platform.pickFiles();
+
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
       final fileName = file.name;
@@ -268,11 +269,13 @@ class HtmlEditorController implements IHtmlEditorController {
         final localFile = await io.File(filePath).copy(newPath);
 
         final index = _controller.selection.baseOffset;
+        
+        _controller.document.insert(index, '\n');
 
-        _controller.document.insert(index, fileName);
+        _controller.document.insert(index + 1, fileName);
 
         _controller.formatText(
-          index,
+          index + 1,
           fileName.length,
           Attribute<String>(
             'link',
@@ -280,9 +283,21 @@ class HtmlEditorController implements IHtmlEditorController {
             'file://${localFile.path}',
           ),
         );
+
+        _controller.document.insert(index + 1 + fileName.length, '\n');
+
+        _controller.updateSelection(
+          TextSelection.collapsed(offset: index + 2 + fileName.length),
+          ChangeSource.local,
+        );
+
+        await Future.delayed(Duration(milliseconds: 1));
+        FocusScope.of(context).requestFocus(focusNode);
       }
     }
   }
+
+
 
   Future<String> uploadFileToServer(String localPath, bool isFile) async {
     final file = io.File(removeFilePrefix(localPath));
