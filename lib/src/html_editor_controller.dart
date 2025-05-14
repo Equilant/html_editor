@@ -291,8 +291,11 @@ class HtmlEditorController implements IHtmlEditorController {
           ChangeSource.local,
         );
 
-        await Future.delayed(Duration(milliseconds: 1));
-        FocusScope.of(context).requestFocus(focusNode);
+        _editorFocusNode.unfocus();
+
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        FocusScope.of(context).requestFocus(_editorFocusNode);
       }
     }
   }

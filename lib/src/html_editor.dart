@@ -123,7 +123,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                     : context.theme.generalGray700,
                               ),
                               onPressed: () async =>
-                                  await _controller.insertFileFromStorage(),
+                                  await _controller.insertFileFromStorage(context),
                             ),
                             QuillToolbarCustomButtonOptions(
                               icon: SvgPicture.asset(
