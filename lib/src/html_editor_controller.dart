@@ -23,6 +23,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:image/image.dart' as img;
+import 'package:collection/collection.dart';
 
 enum HtmlAlignmentType { left, right, center, justify }
 
@@ -149,14 +150,14 @@ class HtmlEditorController implements IHtmlEditorController {
       if (!_isSubscriptMode && !_isSuperscriptMode) return;
       if (change.isEmpty) return;
 
-      final insertOp = change.operations.firstWhere(
+      final insertOp = change.operations.firstWhereOrNull(
         (op) =>
             op.key == 'insert' &&
             op.value is String &&
             (op.value as String).length == 1,
       );
 
-      //if (insertOp == null) return;
+      if (insertOp == null) return;
 
       final inserted = insertOp.value as String;
       final offset = _controller.selection.baseOffset;
