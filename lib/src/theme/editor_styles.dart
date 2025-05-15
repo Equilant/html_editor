@@ -175,6 +175,10 @@ class EditorStyles {
           FontFeature.subscripts(),
         ],
         fontFamily: fontFamily,
+        fontSize: 12,
+        height: 0.8,
+        textBaseline: TextBaseline.alphabetic,
+        leadingDistribution: TextLeadingDistribution.even,
       ),
       superscript: TextStyle(
         color: Colors.black,
@@ -183,6 +187,10 @@ class EditorStyles {
           FontFeature.superscripts(),
         ],
         fontFamily: fontFamily,
+        fontSize: 12,
+        height: 0.8,
+        textBaseline: TextBaseline.alphabetic,
+        leadingDistribution: TextLeadingDistribution.even,
       ),
       italic: TextStyle(
         fontStyle: FontStyle.italic,

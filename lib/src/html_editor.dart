@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
 import 'package:html_editor/src/link_action_delegate.dart';
 import 'package:html_editor/src/link_dialog.dart';
+import 'package:html_editor/src/subscript_embed.dart';
 
 class HtmlEditor extends StatefulWidget {
   final IHtmlEditorController? controller;
@@ -155,6 +156,52 @@ class _HtmlEditorState extends State<HtmlEditor> {
                               ),
                             ),
                             QuillToolbarCustomButtonOptions(
+                              icon: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _controller.isSubscriptMode
+                                      ? context.theme.generalGray800
+                                      : Colors.transparent,
+                                ),
+                                child: Icon(
+                                  Icons.subscript,
+                                  color: widget.readOnly
+                                      ? context.theme.gray500
+                                      : _controller.isSubscriptMode
+                                          ? context.theme.generalGray0
+                                          : context.theme.generalGray700,
+                                ),
+                              ),
+                              onPressed: () {
+                                _controller.toggleSubscriptMode();
+                                setState(() {});
+                              },
+                            ),
+                            QuillToolbarCustomButtonOptions(
+                              icon: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _controller.isSuperscriptMode
+                                      ? context.theme.generalGray800
+                                      : Colors.transparent,
+                                ),
+                                child: Icon(
+                                  Icons.superscript,
+                                  color: widget.readOnly
+                                      ? context.theme.gray500
+                                      : _controller.isSuperscriptMode
+                                          ? context.theme.generalGray0
+                                          : context.theme.generalGray700,
+                                ),
+                              ),
+                              onPressed: () {
+                                _controller.toggleSuperscriptMode();
+                                setState(() {});
+                              },
+                            ),
+                            QuillToolbarCustomButtonOptions(
                               icon: Icon(
                                 Icons.link,
                                 color: widget.readOnly
@@ -192,6 +239,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                           showSearchButton: false,
                           showClipboardCut: false,
                           showClipboardCopy: false,
+                          showSubscript: false,
+                          showSuperscript: false,
                           buttonOptions: QuillSimpleToolbarButtonOptions(
                             base: QuillToolbarBaseButtonOptions(
                               iconTheme: QuillIconTheme(
@@ -233,7 +282,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                         ),
                       ),
                     ),
-                    QuillEditor(
+                    QuillEditor.basic(
                       focusNode: _controller.focusNode,
                       scrollController: _controller.scrollController,
                       controller: _controller.quillController,
@@ -249,6 +298,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                         padding: const EdgeInsets.all(16),
                         showCursor: !widget.readOnly,
                         embedBuilders: [
+                          SubSuperScriptEmbedBuilder(isSubscript: true),
+                          SubSuperScriptEmbedBuilder(isSubscript: false),
                           ...FlutterQuillEmbeds.editorBuilders(
                             imageEmbedConfig: QuillEditorImageEmbedConfig(
                               imageProviderBuilder:

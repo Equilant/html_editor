@@ -8,6 +8,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:html_editor/src/permissions_dialog.dart';
+import 'package:html_editor/src/subscript_embed.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
@@ -62,6 +63,14 @@ abstract interface class IHtmlEditorController {
   GlobalKey get alignmentIconKey;
 
   Future<void> scrollToEditor();
+
+  void toggleSubscriptMode();
+
+  void toggleSuperscriptMode();
+
+  bool get isSubscriptMode;
+
+  bool get isSuperscriptMode;
 }
 
 class HtmlEditorController implements IHtmlEditorController {
@@ -124,6 +133,78 @@ class HtmlEditorController implements IHtmlEditorController {
     }
 
     _controller.addListener(convertDeltaToHtml);
+
+    _initSubSuperScriptListener();
+  }
+
+  StreamSubscription? _textSub;
+  bool _isHandling = false;
+
+  void _initSubSuperScriptListener() {
+    _textSub = _controller.changes.listen((event) {
+      final source = event.source;
+      final change = event.change;
+
+      if (_isHandling || source != ChangeSource.local) return;
+      if (!_isSubscriptMode && !_isSuperscriptMode) return;
+      if (change.isEmpty) return;
+
+      final insertOp = change.operations.firstWhere(
+        (op) =>
+            op.key == 'insert' &&
+            op.value is String &&
+            (op.value as String).length == 1,
+      );
+
+      //if (insertOp == null) return;
+
+      final inserted = insertOp.value as String;
+      final offset = _controller.selection.baseOffset;
+
+      _isHandling = true;
+
+      // Удаляем вставленный обычный символ
+      _controller.replaceText(
+        offset - 1,
+        1,
+        '',
+        TextSelection.collapsed(offset: offset - 1),
+      );
+
+      // Вставляем embed с subscript или superscript
+      final embed = _isSubscriptMode
+          ? MyCustomBlockEmbed.subscript(inserted)
+          : MyCustomBlockEmbed.superscript(inserted);
+
+      _controller.replaceText(
+        offset - 1,
+        0,
+        embed,
+        TextSelection.collapsed(offset: offset),
+      );
+
+      _isHandling = false;
+    });
+  }
+
+  bool _isSubscriptMode = false;
+  bool _isSuperscriptMode = false;
+
+  @override
+  void toggleSubscriptMode() {
+    _isSubscriptMode = !_isSubscriptMode;
+    _isSuperscriptMode = false;
+  }
+
+  @override
+  void toggleSuperscriptMode() {
+    _isSuperscriptMode = !_isSuperscriptMode;
+    _isSubscriptMode = false;
+  }
+
+  void _insertCustomEmbed(MyCustomBlockEmbed embed) {
+    final index = _controller.selection.baseOffset;
+    _controller.replaceText(index, 0, embed, _controller.selection);
   }
 
   bool isWidgetVisible(GlobalKey key) {
@@ -657,4 +738,10 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   GlobalKey<State<StatefulWidget>> get alignmentIconKey => _alignmentIconKey;
+
+  @override
+  bool get isSubscriptMode => _isSubscriptMode;
+
+  @override
+  bool get isSuperscriptMode => _isSuperscriptMode;
 }

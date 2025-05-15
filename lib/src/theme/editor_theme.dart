@@ -44,6 +44,8 @@ class EditorTheme extends InheritedWidget {
 
   Color get generalGray800 => EditorColors.gray800;
 
+  Color get generalGray0 => EditorColors.gray0;
+
   Color get generalGray700 => EditorColors.gray700;
 
   Color get generalBg => EditorColors.bg;
