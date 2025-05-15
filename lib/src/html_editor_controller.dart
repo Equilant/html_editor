@@ -141,8 +141,8 @@ class HtmlEditorController implements IHtmlEditorController {
   StreamSubscription? _textSub;
   bool _isHandling = false;
 
-  void _initSubSuperScriptListener() {
-    _textSub = _controller.changes.listen((event) {
+  void _initSubSuperScriptListener() async {
+    _textSub = _controller.changes.listen((event) async {
       final source = event.source;
       final change = event.change;
 
@@ -172,6 +172,7 @@ class HtmlEditorController implements IHtmlEditorController {
         TextSelection.collapsed(offset: offset - 1),
       );
 
+
       // Вставляем embed с subscript или superscript
       final embed = _isSubscriptMode
           ? MyCustomBlockEmbed.subscript(inserted)
@@ -183,6 +184,7 @@ class HtmlEditorController implements IHtmlEditorController {
         embed,
         TextSelection.collapsed(offset: offset),
       );
+
 
       _isHandling = false;
     });
@@ -584,10 +586,27 @@ class HtmlEditorController implements IHtmlEditorController {
   QuillController get quillController => _controller;
 
   @override
+  @override
   void convertDeltaToHtml() {
     final converter = QuillDeltaToHtmlConverter(
       _controller.document.toDelta().toJson(),
+      ConverterOptions(),
     );
+
+    print(jsonEncode(_controller.document.toDelta().toJson()));
+
+    converter.renderCustomWith = (DeltaInsertOp customOp, DeltaInsertOp? contextOp) {
+      final type = customOp.insert.type;
+      final value = customOp.insert.value;
+      if (type == 'subscript') {
+        return '<sub>${value.toString()}</sub>';
+      }
+      if (type == 'superscript') {
+        return '<sup>${value.toString()}</sup>';
+      }
+      print('CUSTOM EMBED: $value, TYPE: $type');
+      return '';
+    };
 
     internalHtml = converter.convert();
     const emptyHtml = '<p><br/></p>';
@@ -595,6 +614,7 @@ class HtmlEditorController implements IHtmlEditorController {
       onContentChanged?.call('');
     } else {
       final html = convertHtml(internalHtml ?? '');
+      print('HTML $html');
       onContentChanged?.call(html);
     }
   }
