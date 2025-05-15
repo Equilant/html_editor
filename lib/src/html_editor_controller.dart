@@ -519,58 +519,52 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   Future<void> pickImage(ImageSource imageSource, BuildContext context) async {
-    if (io.Platform.isIOS) {
-      final permission = imageSource == ImageSource.camera
-          ? Permission.camera
-          : Permission.photos;
+    final permission = imageSource == ImageSource.camera
+        ? Permission.camera
+        : Permission.photos;
 
-      final status = await permission.status;
+    final status = await permission.request();
 
-      if (status.isDenied || status.isRestricted) {
-        final result = await permission.request();
-
-        if (!result.isGranted) {
-          return;
-        }
-      } else if (status.isPermanentlyDenied) {
-        await PermissionsDialog.showPermissionDialog(context);
-        return;
-      }
+    if (status.isPermanentlyDenied) {
+      await PermissionsDialog.showPermissionDialog(context);
+      return;
     }
 
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: imageSource);
+    if (status.isGranted) {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: imageSource);
 
-    if (image != null) {
-      try {
-        final bytes = await image.readAsBytes();
+      if (image != null) {
+        try {
+          final bytes = await image.readAsBytes();
 
-        if (bytes.isEmpty) {
-          debugPrint("Получен пустой файл изображения");
-          return;
+          if (bytes.isEmpty) {
+            debugPrint("Получен пустой файл изображения");
+            return;
+          }
+
+          final directory = await getTemporaryDirectory();
+          final newPath = path.join(directory.path, path.basename(image.path));
+          final file = await io.File(newPath).writeAsBytes(bytes);
+
+          final localImagePath = 'file://${file.path}';
+
+          final index = _controller.selection.baseOffset;
+
+          _controller.document.insert(index, '\n');
+          _controller.document
+              .insert(index + 1, BlockEmbed.image(localImagePath));
+          _controller.document.insert(index + 2, '\n');
+
+          _controller.updateSelection(
+            TextSelection.collapsed(offset: index + 3),
+            ChangeSource.local,
+          );
+
+          debugPrint("Изображение успешно вставлено: $localImagePath");
+        } catch (e) {
+          debugPrint("Ошибка вставки изображения: $e");
         }
-
-        final directory = await getTemporaryDirectory();
-        final newPath = path.join(directory.path, path.basename(image.path));
-        final file = await io.File(newPath).writeAsBytes(bytes);
-
-        final localImagePath = 'file://${file.path}';
-
-        final index = _controller.selection.baseOffset;
-
-        _controller.document.insert(index, '\n');
-        _controller.document
-            .insert(index + 1, BlockEmbed.image(localImagePath));
-        _controller.document.insert(index + 2, '\n');
-
-        _controller.updateSelection(
-          TextSelection.collapsed(offset: index + 3),
-          ChangeSource.local,
-        );
-
-        debugPrint("Изображение успешно вставлено: $localImagePath");
-      } catch (e) {
-        debugPrint("Ошибка вставки изображения: $e");
       }
     }
   }

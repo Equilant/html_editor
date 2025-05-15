@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:html_editor/editor.dart';
 
 class LinkActionDelegate {
   static Future<LinkMenuAction> customLinkActionPickerDelegate(
@@ -55,25 +56,56 @@ class LinkActionDelegate {
       BuildContext context, String link) async {
     final result = await showModalBottomSheet<LinkMenuAction>(
       context: context,
+      backgroundColor: context.theme.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (ctx) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(height: 16),
+              Container(
+                width: MediaQuery.of(context).size.width / 6,
+                height: 5,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.grey.withOpacity(0.3),
+                ),
+              ),
+              const SizedBox(height: 16),
               _MaterialAction(
                 title: 'Открыть',
                 icon: Icons.language_sharp,
+                color: context.theme.gray800,
                 onPressed: () =>
                     Navigator.of(context).pop(LinkMenuAction.launch),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Divider(
+                  height: 0,
+                  color: context.theme.gray100,
+                ),
               ),
               _MaterialAction(
                 title: 'Копировать',
                 icon: Icons.copy_sharp,
+                color: context.theme.gray800,
                 onPressed: () => Navigator.of(context).pop(LinkMenuAction.copy),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Divider(
+                  height: 0,
+                  color: context.theme.gray100,
+                ),
               ),
               _MaterialAction(
                 title: 'Удалить',
                 icon: Icons.link_off_sharp,
+                color: context.theme.gray800,
                 onPressed: () =>
                     Navigator.of(context).pop(LinkMenuAction.remove),
               ),
@@ -131,22 +163,28 @@ class _MaterialAction extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.onPressed,
+    required this.color,
   });
 
   final String title;
   final IconData icon;
   final VoidCallback onPressed;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(
-        icon,
-        size: theme.iconTheme.size,
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+      minTileHeight: 80,
+      title: Text(
+        title,
+        style: AppTextStyle.headlineH18Regular.copyWith(
+          color: color,
+        ),
       ),
-      title: Text(title),
+      trailing: Icon(
+        icon,
+        color: color,
+      ),
       onTap: onPressed,
     );
   }

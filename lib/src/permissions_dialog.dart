@@ -8,6 +8,7 @@ class PermissionsDialog {
       context: context,
       builder: (_) {
         return AlertDialog.adaptive(
+          backgroundColor: context.theme.bg,
           title: Text(
             'Требуется разрешение',
             style: AppTextStyle.headlineH18Medium
