@@ -164,7 +164,6 @@ class HtmlEditorController implements IHtmlEditorController {
 
       _isHandling = true;
 
-      // Удаляем вставленный обычный символ
       _controller.replaceText(
         offset - 1,
         1,
@@ -172,8 +171,6 @@ class HtmlEditorController implements IHtmlEditorController {
         TextSelection.collapsed(offset: offset - 1),
       );
 
-
-      // Вставляем embed с subscript или superscript
       final embed = _isSubscriptMode
           ? MyCustomBlockEmbed.subscript(inserted)
           : MyCustomBlockEmbed.superscript(inserted);
@@ -184,7 +181,6 @@ class HtmlEditorController implements IHtmlEditorController {
         embed,
         TextSelection.collapsed(offset: offset),
       );
-
 
       _isHandling = false;
     });
@@ -203,11 +199,6 @@ class HtmlEditorController implements IHtmlEditorController {
   void toggleSuperscriptMode() {
     _isSuperscriptMode = !_isSuperscriptMode;
     _isSubscriptMode = false;
-  }
-
-  void _insertCustomEmbed(MyCustomBlockEmbed embed) {
-    final index = _controller.selection.baseOffset;
-    _controller.replaceText(index, 0, embed, _controller.selection);
   }
 
   bool isWidgetVisible(GlobalKey key) {
@@ -319,6 +310,7 @@ class HtmlEditorController implements IHtmlEditorController {
       _editorFocusNode.dispose();
       _keyboardSubscription?.cancel();
       _shouldDispose = false;
+      _textSub?.cancel();
     }
   }
 
@@ -355,13 +347,23 @@ class HtmlEditorController implements IHtmlEditorController {
         final localFile = await io.File(filePath).copy(newPath);
 
         final index = _controller.selection.baseOffset;
+        final plainText = _controller.document.toPlainText();
+        final lastNewline =
+            (index > 0) ? plainText.lastIndexOf('\n', index - 1) : -1;
+        final lineStart = lastNewline + 1;
+        final textBeforeCursor = plainText.substring(lineStart, index);
 
-        _controller.document.insert(index, '\n');
+        int insertIndex = index;
 
-        _controller.document.insert(index + 1, fileName);
+        if (textBeforeCursor.trim().isNotEmpty) {
+          _controller.document.insert(insertIndex, '\n');
+          insertIndex += 1; // Только если реально добавили \n!
+        }
+
+        _controller.document.insert(insertIndex, fileName);
 
         _controller.formatText(
-          index + 1,
+          insertIndex,
           fileName.length,
           Attribute<String>(
             'link',
@@ -370,17 +372,15 @@ class HtmlEditorController implements IHtmlEditorController {
           ),
         );
 
-        _controller.document.insert(index + 1 + fileName.length, '\n');
+        _controller.document.insert(insertIndex + fileName.length, '\n');
 
         _controller.updateSelection(
-          TextSelection.collapsed(offset: index + 2 + fileName.length),
+          TextSelection.collapsed(offset: insertIndex + fileName.length + 1),
           ChangeSource.local,
         );
 
         _editorFocusNode.unfocus();
-
         await Future.delayed(const Duration(milliseconds: 100));
-
         FocusScope.of(context).requestFocus(_editorFocusNode);
       }
     }
@@ -593,9 +593,8 @@ class HtmlEditorController implements IHtmlEditorController {
       ConverterOptions(),
     );
 
-    print(jsonEncode(_controller.document.toDelta().toJson()));
-
-    converter.renderCustomWith = (DeltaInsertOp customOp, DeltaInsertOp? contextOp) {
+    converter.renderCustomWith =
+        (DeltaInsertOp customOp, DeltaInsertOp? contextOp) {
       final type = customOp.insert.type;
       final value = customOp.insert.value;
       if (type == 'subscript') {
@@ -604,7 +603,6 @@ class HtmlEditorController implements IHtmlEditorController {
       if (type == 'superscript') {
         return '<sup>${value.toString()}</sup>';
       }
-      print('CUSTOM EMBED: $value, TYPE: $type');
       return '';
     };
 
@@ -614,7 +612,6 @@ class HtmlEditorController implements IHtmlEditorController {
       onContentChanged?.call('');
     } else {
       final html = convertHtml(internalHtml ?? '');
-      print('HTML $html');
       onContentChanged?.call(html);
     }
   }
@@ -652,14 +649,23 @@ class HtmlEditorController implements IHtmlEditorController {
           final localImagePath = 'file://${file.path}';
 
           final index = _controller.selection.baseOffset;
+          final plainText = _controller.document.toPlainText();
+          final lastNewline =
+              (index > 0) ? plainText.lastIndexOf('\n', index - 1) : -1;
+          final lineStart = lastNewline + 1;
+          final textBeforeCursor = plainText.substring(lineStart, index);
 
-          _controller.document.insert(index, '\n');
+          int insertIndex = index;
+          if (textBeforeCursor.trim().isNotEmpty) {
+            _controller.document.insert(insertIndex, '\n');
+            insertIndex += 1;
+          }
           _controller.document
-              .insert(index + 1, BlockEmbed.image(localImagePath));
-          _controller.document.insert(index + 2, '\n');
+              .insert(insertIndex, BlockEmbed.image(localImagePath));
+          _controller.document.insert(insertIndex + 1, '\n');
 
           _controller.updateSelection(
-            TextSelection.collapsed(offset: index + 3),
+            TextSelection.collapsed(offset: insertIndex + 2),
             ChangeSource.local,
           );
 
