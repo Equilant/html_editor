@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:html_editor/editor.dart';
 
 extension ThemeContextGetter on BuildContext {
-  EditorTheme get theme => EditorTheme.of(this);
+  EditorTheme get editorTheme => EditorTheme.of(this);
 }
 
 extension HtmlAlignmentTypeExt on HtmlAlignmentType {

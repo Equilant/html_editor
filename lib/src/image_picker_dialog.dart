@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
-import 'package:html_editor/src/icons/html_icons.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImagePickerDialog {
@@ -16,7 +15,7 @@ class ImagePickerDialog {
         _buildListTile(
           title: 'Удалить изображение',
           icon: HtmlIcons.delete,
-          iconColor: context.theme.red800,
+          iconColor: context.editorTheme.red800,
           onTap: () {
             if (context.mounted) Navigator.of(context).pop();
             controller.deleteImage(imageUrl);
@@ -36,13 +35,13 @@ class ImagePickerDialog {
         Text(
           'Добавить изображение',
           style: AppTextStyle.headlineH18Medium
-              .copyWith(color: context.theme.gray800),
+              .copyWith(color: context.editorTheme.gray800),
         ),
         const SizedBox(height: 12),
         _buildListTile(
           title: 'Сделать фото',
           icon: HtmlIcons.camera,
-          iconColor: context.theme.gray800,
+          iconColor: context.editorTheme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
             await controller.pickImage(ImageSource.camera, context);
@@ -52,13 +51,13 @@ class ImagePickerDialog {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Divider(
             height: 0,
-            color: context.theme.gray100,
+            color: context.editorTheme.gray100,
           ),
         ),
         _buildListTile(
           title: 'Выбрать изображение',
           icon: HtmlIcons.gallery,
-          iconColor: context.theme.gray800,
+          iconColor: context.editorTheme.gray800,
           onTap: () async {
             if (context.mounted) Navigator.of(context).pop();
             await controller.pickImage(ImageSource.gallery, context);
@@ -74,7 +73,7 @@ class ImagePickerDialog {
   }) async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: context.theme.bg,
+      backgroundColor: context.editorTheme.bg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

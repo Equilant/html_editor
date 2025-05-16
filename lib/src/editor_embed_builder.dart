@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
-class SubSuperScriptEmbedBuilder extends EmbedBuilder {
+class EditorEmbedBuilder extends EmbedBuilder {
   final bool isSubscript;
 
-  SubSuperScriptEmbedBuilder({required this.isSubscript});
+  const EditorEmbedBuilder({required this.isSubscript});
 
   @override
   String get key => isSubscript ? 'subscript' : 'superscript';
@@ -12,7 +12,7 @@ class SubSuperScriptEmbedBuilder extends EmbedBuilder {
   @override
   Widget build(BuildContext context, EmbedContext embedContext) {
     final text = embedContext.node.value.data;
-    final style =  const TextStyle(fontSize: 16);
+    final style = const TextStyle(fontSize: 16);
 
     return Transform.translate(
       offset: Offset(0, isSubscript ? 4 : -4),
@@ -41,16 +41,12 @@ class SubSuperScriptEmbedBuilder extends EmbedBuilder {
   }
 }
 
+class EditorCustomBlockEmbed extends BlockEmbed {
+  const EditorCustomBlockEmbed(super.type, super.data);
 
+  static EditorCustomBlockEmbed subscript(String data) =>
+      EditorCustomBlockEmbed('subscript', data);
 
-class MyCustomBlockEmbed extends BlockEmbed {
-  MyCustomBlockEmbed(String type, String data)
-      : super(type, data);
-
-  static MyCustomBlockEmbed subscript(String data) =>
-      MyCustomBlockEmbed('subscript', data);
-
-  static MyCustomBlockEmbed superscript(String data) =>
-      MyCustomBlockEmbed('superscript', data);
+  static EditorCustomBlockEmbed superscript(String data) =>
+      EditorCustomBlockEmbed('superscript', data);
 }
-

@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:html_editor/src/permissions_dialog.dart';
-import 'package:html_editor/src/subscript_embed.dart';
+import 'package:html_editor/src/editor_embed_builder.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
@@ -163,7 +162,7 @@ class HtmlEditorController implements IHtmlEditorController {
       if (insertOp == null) return;
 
       final inserted = insertOp.value as String;
-      
+
       if (inserted == '\n') {
         return;
       }
@@ -179,8 +178,8 @@ class HtmlEditorController implements IHtmlEditorController {
         );
 
         final embed = _isSubscriptMode
-            ? MyCustomBlockEmbed.subscript(inserted)
-            : MyCustomBlockEmbed.superscript(inserted);
+            ? EditorCustomBlockEmbed.subscript(inserted)
+            : EditorCustomBlockEmbed.superscript(inserted);
 
         _controller.replaceText(
           offset - 1,
@@ -232,12 +231,14 @@ class HtmlEditorController implements IHtmlEditorController {
     if (context == null) return;
 
     await Future.delayed(const Duration(milliseconds: 500));
-    Scrollable.ensureVisible(
-      context,
-      alignment: 1.0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    if (context.mounted) {
+      Scrollable.ensureVisible(
+        context,
+        alignment: 1.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _onKeyboardVisible(bool isVisible) {
@@ -369,7 +370,9 @@ class HtmlEditorController implements IHtmlEditorController {
 
         _editorFocusNode.unfocus();
         await Future.delayed(const Duration(milliseconds: 100));
-        FocusScope.of(context).requestFocus(_editorFocusNode);
+        if (context.mounted) {
+          FocusScope.of(context).requestFocus(_editorFocusNode);
+        }
       }
     }
   }
@@ -613,7 +616,10 @@ class HtmlEditorController implements IHtmlEditorController {
     final status = await permission.request();
 
     if (status.isPermanentlyDenied) {
-      await PermissionsDialog.showPermissionDialog(context);
+      if (context.mounted) {
+        await PermissionsDialog.showPermissionDialog(context);
+      }
+
       return;
     }
 

@@ -8,16 +8,16 @@ class PermissionsDialog {
       context: context,
       builder: (_) {
         return AlertDialog.adaptive(
-          backgroundColor: context.theme.bg,
+          backgroundColor: context.editorTheme.bg,
           title: Text(
             'Требуется разрешение',
             style: AppTextStyle.headlineH18Medium
-                .copyWith(color: context.theme.gray800),
+                .copyWith(color: context.editorTheme.gray800),
           ),
           content: Text(
             'Для выполнения этого действия необходимо разрешение. Пожалуйста, откройте настройки приложения и предоставьте доступ.',
             style: AppTextStyle.textT14Regular
-                .copyWith(color: context.theme.gray800),
+                .copyWith(color: context.editorTheme.gray800),
           ),
           actions: [
             TextButton(
@@ -25,7 +25,7 @@ class PermissionsDialog {
               child: Text(
                 'Отмена',
                 style: AppTextStyle.headlineH16Medium
-                    .copyWith(color: context.theme.gray800),
+                    .copyWith(color: context.editorTheme.gray800),
               ),
             ),
             TextButton(
@@ -36,7 +36,7 @@ class PermissionsDialog {
               child: Text(
                 'Настройки',
                 style: AppTextStyle.headlineH16Medium
-                    .copyWith(color: context.theme.gray800),
+                    .copyWith(color: context.editorTheme.gray800),
               ),
             ),
           ],

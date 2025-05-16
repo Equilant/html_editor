@@ -15,11 +15,11 @@ class LinkDialog {
         return StatefulBuilder(builder: (_, setState) {
           return AlertDialog(
             title: const Text('Добавить ссылку'),
-            backgroundColor: context.theme.bg,
+            backgroundColor: context.editorTheme.bg,
             insetPadding: const EdgeInsets.all(24),
             clipBehavior: Clip.antiAliasWithSaveLayer,
             titleTextStyle: AppTextStyle.headlineH24Regular
-                .copyWith(color: context.theme.gray800),
+                .copyWith(color: context.editorTheme.gray800),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -35,13 +35,13 @@ class LinkDialog {
                       labelText: 'Название',
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                            color: context.theme.gray800, width: 1.5),
+                            color: context.editorTheme.gray800, width: 1.5),
                       ),
                       labelStyle: AppTextStyle.textT14Regular
-                          .copyWith(color: context.theme.gray800),
+                          .copyWith(color: context.editorTheme.gray800),
                     ),
                     style: AppTextStyle.textT14Regular
-                        .copyWith(color: context.theme.gray800),
+                        .copyWith(color: context.editorTheme.gray800),
                     onChanged: (_) => setState(() {}),
                   ),
                   TextField(
@@ -51,13 +51,13 @@ class LinkDialog {
                       hintText: 'например, google.com',
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                            color: context.theme.gray800, width: 1.5),
+                            color: context.editorTheme.gray800, width: 1.5),
                       ),
                       labelStyle: AppTextStyle.textT14Regular
-                          .copyWith(color: context.theme.gray800),
+                          .copyWith(color: context.editorTheme.gray800),
                     ),
                     style: AppTextStyle.textT14Regular
-                        .copyWith(color: context.theme.gray800),
+                        .copyWith(color: context.editorTheme.gray800),
                     onChanged: (_) => setState(() {}),
                   ),
                 ],
@@ -67,7 +67,7 @@ class LinkDialog {
               TextButton(
                 style: ButtonStyle(
                   foregroundColor:
-                      WidgetStateProperty.all(context.theme.gray800),
+                      WidgetStateProperty.all(context.editorTheme.gray800),
                 ),
                 child: const Text('Отмена'),
                 onPressed: () => Navigator.pop(context, false),
@@ -77,8 +77,8 @@ class LinkDialog {
                   foregroundColor: WidgetStateProperty.all(
                       nameController.text.isNotEmpty &&
                               linkController.text.isNotEmpty
-                          ? context.theme.gray800
-                          : context.theme.gray400),
+                          ? context.editorTheme.gray800
+                          : context.editorTheme.gray400),
                 ),
                 child: const Text('Ок'),
                 onPressed: () {

@@ -16,7 +16,7 @@ class MenuDialog {
         renderBox.localToGlobal(Offset.zero, ancestor: overlay);
     final Size size = renderBox.size;
 
-    final iconColor = context.theme.gray800;
+    final iconColor = context.editorTheme.gray800;
 
     final textStyle = AppTextStyle.textT14Regular.copyWith(
       color: iconColor,
@@ -24,7 +24,7 @@ class MenuDialog {
 
     showMenu(
       context: context,
-      color: context.theme.bg,
+      color: context.editorTheme.bg,
       position: RelativeRect.fromLTRB(
         offset.dx,
         offset.dy + size.height,

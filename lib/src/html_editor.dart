@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:html_editor/editor.dart';
 import 'package:html_editor/src/link_action_delegate.dart';
 import 'package:html_editor/src/link_dialog.dart';
-import 'package:html_editor/src/subscript_embed.dart';
+import 'package:html_editor/src/editor_embed_builder.dart';
 
 class HtmlEditor extends StatefulWidget {
   final IHtmlEditorController? controller;
@@ -71,22 +71,22 @@ class _HtmlEditorState extends State<HtmlEditor> {
         return Theme(
           data: Theme.of(context).copyWith(
             textSelectionTheme: TextSelectionThemeData(
-              cursorColor: context.theme.generalGray700,
+              cursorColor: context.editorTheme.generalGray700,
             ),
             dialogTheme: DialogTheme(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              backgroundColor: context.theme.bg,
+              backgroundColor: context.editorTheme.bg,
             ),
             inputDecorationTheme: InputDecorationTheme(
               enabledBorder: UnderlineInputBorder(
                 borderSide:
-                    BorderSide(color: context.theme.gray800, width: 0.5),
+                    BorderSide(color: context.editorTheme.gray800, width: 0.5),
               ),
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(
-                  color: context.theme.gray800,
+                  color: context.editorTheme.gray800,
                 ),
               ),
             ),
@@ -95,9 +95,9 @@ class _HtmlEditorState extends State<HtmlEditor> {
                 foregroundColor: MaterialStateProperty.resolveWith<Color>(
                   (states) {
                     if (states.contains(MaterialState.disabled)) {
-                      return context.theme.gray400;
+                      return context.editorTheme.gray400;
                     }
-                    return context.theme.gray800;
+                    return context.editorTheme.gray800;
                   },
                 ),
               ),
@@ -107,7 +107,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: context.theme.generalBg,
+                  color: context.editorTheme.generalBg,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey),
                 ),
@@ -124,8 +124,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                               icon: SvgPicture.asset(
                                 HtmlIcons.clipBold,
                                 color: widget.readOnly
-                                    ? context.theme.gray500
-                                    : context.theme.generalGray700,
+                                    ? context.editorTheme.gray500
+                                    : context.editorTheme.generalGray700,
                               ),
                               onPressed: () async => await _controller
                                   .insertFileFromStorage(context),
@@ -134,8 +134,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                               icon: SvgPicture.asset(
                                 HtmlIcons.galleryBold,
                                 color: widget.readOnly
-                                    ? context.theme.gray500
-                                    : context.theme.generalGray700,
+                                    ? context.editorTheme.gray500
+                                    : context.editorTheme.generalGray700,
                               ),
                               onPressed: () async =>
                                   await ImagePickerDialog.showImagePickerDialog(
@@ -148,8 +148,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                 key: _controller.alignmentIconKey,
                                 Icons.format_align_justify_outlined,
                                 color: widget.readOnly
-                                    ? context.theme.gray500
-                                    : context.theme.generalGray700,
+                                    ? context.editorTheme.gray500
+                                    : context.editorTheme.generalGray700,
                               ),
                               onPressed: () async =>
                                   MenuDialog.showAlignmentMenu(
@@ -164,16 +164,16 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: _controller.isSubscriptMode
-                                      ? context.theme.generalGray800
+                                      ? context.editorTheme.generalGray800
                                       : Colors.transparent,
                                 ),
                                 child: Icon(
                                   Icons.subscript,
                                   color: widget.readOnly
-                                      ? context.theme.gray500
+                                      ? context.editorTheme.gray500
                                       : _controller.isSubscriptMode
-                                          ? context.theme.generalGray0
-                                          : context.theme.generalGray700,
+                                          ? context.editorTheme.generalGray0
+                                          : context.editorTheme.generalGray700,
                                 ),
                               ),
                               onPressed: () {
@@ -187,16 +187,16 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: _controller.isSuperscriptMode
-                                      ? context.theme.generalGray800
+                                      ? context.editorTheme.generalGray800
                                       : Colors.transparent,
                                 ),
                                 child: Icon(
                                   Icons.superscript,
                                   color: widget.readOnly
-                                      ? context.theme.gray500
+                                      ? context.editorTheme.gray500
                                       : _controller.isSuperscriptMode
-                                          ? context.theme.generalGray0
-                                          : context.theme.generalGray700,
+                                          ? context.editorTheme.generalGray0
+                                          : context.editorTheme.generalGray700,
                                 ),
                               ),
                               onPressed: () {
@@ -208,8 +208,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                               icon: Icon(
                                 Icons.link,
                                 color: widget.readOnly
-                                    ? context.theme.gray500
-                                    : context.theme.generalGray700,
+                                    ? context.editorTheme.gray500
+                                    : context.editorTheme.generalGray700,
                               ),
                               onPressed: () async =>
                                   await LinkDialog.showCustomLinkDialog(
@@ -252,11 +252,12 @@ class _HtmlEditorState extends State<HtmlEditor> {
                                     style: ButtonStyle(
                                         backgroundColor:
                                             WidgetStateProperty.all<Color>(
-                                                context.theme.generalGray800))),
+                                                context.editorTheme
+                                                    .generalGray800))),
                                 iconButtonUnselectedData: IconButtonData(
                                   color: widget.readOnly
-                                      ? context.theme.gray500
-                                      : context.theme.generalGray700,
+                                      ? context.editorTheme.gray500
+                                      : context.editorTheme.generalGray700,
                                 ),
                               ),
                             ),
@@ -264,20 +265,21 @@ class _HtmlEditorState extends State<HtmlEditor> {
                               iconTheme: QuillIconTheme(
                                 iconButtonUnselectedData: IconButtonData(
                                   color: widget.readOnly
-                                      ? context.theme.gray500
-                                      : context.theme.generalGray700,
+                                      ? context.editorTheme.gray500
+                                      : context.editorTheme.generalGray700,
                                 ),
                               ),
                               dialogTheme: QuillDialogTheme(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                dialogBackgroundColor: context.theme.bg,
+                                dialogBackgroundColor: context.editorTheme.bg,
                                 labelTextStyle: AppTextStyle.textT14Regular
-                                    .copyWith(color: context.theme.gray800),
+                                    .copyWith(
+                                        color: context.editorTheme.gray800),
                                 inputTextStyle:
                                     AppTextStyle.textT14Regular.copyWith(
-                                  color: context.theme.gray800,
+                                  color: context.editorTheme.gray800,
                                 ),
                               ),
                             ),
@@ -301,8 +303,8 @@ class _HtmlEditorState extends State<HtmlEditor> {
                         padding: const EdgeInsets.all(16),
                         showCursor: !widget.readOnly,
                         embedBuilders: [
-                          SubSuperScriptEmbedBuilder(isSubscript: true),
-                          SubSuperScriptEmbedBuilder(isSubscript: false),
+                          EditorEmbedBuilder(isSubscript: true),
+                          EditorEmbedBuilder(isSubscript: false),
                           ...FlutterQuillEmbeds.editorBuilders(
                             imageEmbedConfig: QuillEditorImageEmbedConfig(
                               imageProviderBuilder:

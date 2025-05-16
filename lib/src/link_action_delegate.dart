@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:html_editor/editor.dart';
 
 class LinkActionDelegate {
@@ -56,7 +55,7 @@ class LinkActionDelegate {
       BuildContext context, String link) async {
     final result = await showModalBottomSheet<LinkMenuAction>(
       context: context,
-      backgroundColor: context.theme.bg,
+      backgroundColor: context.editorTheme.bg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -78,7 +77,7 @@ class LinkActionDelegate {
               _MaterialAction(
                 title: 'Открыть',
                 icon: Icons.language_sharp,
-                color: context.theme.gray800,
+                color: context.editorTheme.gray800,
                 onPressed: () =>
                     Navigator.of(context).pop(LinkMenuAction.launch),
               ),
@@ -86,26 +85,26 @@ class LinkActionDelegate {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Divider(
                   height: 0,
-                  color: context.theme.gray100,
+                  color: context.editorTheme.gray100,
                 ),
               ),
               _MaterialAction(
                 title: 'Копировать',
                 icon: Icons.copy_sharp,
-                color: context.theme.gray800,
+                color: context.editorTheme.gray800,
                 onPressed: () => Navigator.of(context).pop(LinkMenuAction.copy),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Divider(
                   height: 0,
-                  color: context.theme.gray100,
+                  color: context.editorTheme.gray100,
                 ),
               ),
               _MaterialAction(
                 title: 'Удалить',
                 icon: Icons.link_off_sharp,
-                color: context.theme.gray800,
+                color: context.editorTheme.gray800,
                 onPressed: () =>
                     Navigator.of(context).pop(LinkMenuAction.remove),
               ),
