@@ -96,15 +96,12 @@ class HtmlEditorController implements IHtmlEditorController {
 
   final String storageUrl;
 
-  final GlobalKey? scrollKey;
-
   HtmlEditorController({
     this.externalHtml,
     this.onContentChanged,
     this.readOnly,
     this.onControllerCreated,
     required this.storageUrl,
-    required this.scrollKey,
   }) {
     _controller = QuillController.basic(
       config: QuillControllerConfig(
@@ -227,7 +224,7 @@ class HtmlEditorController implements IHtmlEditorController {
 
   @override
   Future<void> scrollToEditor() async {
-    final context = scrollKey?.currentContext;
+    final context = _editorKey.currentContext;
     if (context == null) return;
 
     await Future.delayed(const Duration(milliseconds: 500));

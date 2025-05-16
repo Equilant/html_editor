@@ -55,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             HtmlEditor(
-              scrollKey: GlobalKey(),
               readOnly: false,
               storageUrl: '',
             ),

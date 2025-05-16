@@ -15,7 +15,6 @@ class HtmlEditor extends StatefulWidget {
   final bool readOnly;
   final void Function(String content)? onContentChanged;
   final String storageUrl;
-  final GlobalKey? scrollKey;
 
   const HtmlEditor({
     this.html,
@@ -26,7 +25,6 @@ class HtmlEditor extends StatefulWidget {
     this.onControllerCreated,
     this.onContentChanged,
     required this.storageUrl,
-    required this.scrollKey,
     super.key,
   });
 
@@ -52,7 +50,6 @@ class _HtmlEditorState extends State<HtmlEditor> {
           readOnly: widget.readOnly,
           onControllerCreated: widget.onControllerCreated,
           storageUrl: widget.storageUrl,
-          scrollKey: widget.scrollKey,
         );
     super.initState();
   }
@@ -116,7 +113,6 @@ class _HtmlEditorState extends State<HtmlEditor> {
                     IgnorePointer(
                       ignoring: _controller.quillController.readOnly,
                       child: QuillSimpleToolbar(
-                        key: _controller.editorKey,
                         controller: _controller.quillController,
                         config: QuillSimpleToolbarConfig(
                           customButtons: [
@@ -288,6 +284,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
                       ),
                     ),
                     QuillEditor.basic(
+                      key: _controller.editorKey,
                       focusNode: _controller.focusNode,
                       scrollController: _controller.scrollController,
                       controller: _controller.quillController,
