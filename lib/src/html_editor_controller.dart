@@ -163,29 +163,34 @@ class HtmlEditorController implements IHtmlEditorController {
       if (insertOp == null) return;
 
       final inserted = insertOp.value as String;
+      
+      if (inserted == '\n') {
+        return;
+      }
+
       final offset = _controller.selection.baseOffset;
-
       _isHandling = true;
+      try {
+        _controller.replaceText(
+          offset - 1,
+          1,
+          '',
+          TextSelection.collapsed(offset: offset - 1),
+        );
 
-      _controller.replaceText(
-        offset - 1,
-        1,
-        '',
-        TextSelection.collapsed(offset: offset - 1),
-      );
+        final embed = _isSubscriptMode
+            ? MyCustomBlockEmbed.subscript(inserted)
+            : MyCustomBlockEmbed.superscript(inserted);
 
-      final embed = _isSubscriptMode
-          ? MyCustomBlockEmbed.subscript(inserted)
-          : MyCustomBlockEmbed.superscript(inserted);
-
-      _controller.replaceText(
-        offset - 1,
-        0,
-        embed,
-        TextSelection.collapsed(offset: offset),
-      );
-
-      _isHandling = false;
+        _controller.replaceText(
+          offset - 1,
+          0,
+          embed,
+          TextSelection.collapsed(offset: offset),
+        );
+      } finally {
+        _isHandling = false;
+      }
     });
   }
 
