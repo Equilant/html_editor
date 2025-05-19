@@ -239,6 +239,7 @@ class HtmlEditorController implements IHtmlEditorController {
   }
 
   void _onKeyboardVisible(bool isVisible) {
+    if (readOnly ?? false) return;
     if (!isVisible) return;
 
     _waitForKeyboardAndScroll();
