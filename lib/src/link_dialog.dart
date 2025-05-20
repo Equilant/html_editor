@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:html_editor/editor.dart';
+import 'package:html_editor/src/html_input_field.dart';
 
 class LinkDialog {
   static Future<void> showCustomLinkDialog(
@@ -13,82 +15,126 @@ class LinkDialog {
       context: context,
       builder: (_) {
         return StatefulBuilder(builder: (_, setState) {
-          return AlertDialog(
-            title: const Text('Добавить ссылку'),
-            backgroundColor: context.editorTheme.bg,
-            insetPadding: const EdgeInsets.all(24),
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            titleTextStyle: AppTextStyle.headlineH24Regular
-                .copyWith(color: context.editorTheme.gray800),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            content: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 8,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Название',
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                            color: context.editorTheme.gray800, width: 1.5),
-                      ),
-                      labelStyle: AppTextStyle.textT14Regular
-                          .copyWith(color: context.editorTheme.gray800),
-                    ),
-                    style: AppTextStyle.textT14Regular
-                        .copyWith(color: context.editorTheme.gray800),
-                    onChanged: (_) => setState(() {}),
+          return Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 280.0),
+                child: Material(
+                  color: context.editorTheme.bg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
-                  TextField(
-                    controller: linkController,
-                    decoration: InputDecoration(
-                      labelText: 'Ссылка',
-                      hintText: 'например, google.com',
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                            color: context.editorTheme.gray800, width: 1.5),
-                      ),
-                      labelStyle: AppTextStyle.textT14Regular
-                          .copyWith(color: context.editorTheme.gray800),
+                  type: MaterialType.card,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: context.editorTheme.bg,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    style: AppTextStyle.textT14Regular
-                        .copyWith(color: context.editorTheme.gray800),
-                    onChanged: (_) => setState(() {}),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 8,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Добавить ссылку',
+                              style: AppTextStyle.headlineH18Medium,
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context, false),
+                              child: SvgPicture.asset(
+                                HtmlIcons.close,
+                                color: context.editorTheme.gray800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        HtmlInputField(
+                          context: context,
+                          controller: nameController,
+                          customContentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          cursorColor: context.editorTheme.generalGray700,
+                          onChanged: (_) => setState(() {}),
+                          onTapOutside: (event) =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
+                          hint: 'Название',
+                          hintStyle: AppTextStyle.textT14Regular.copyWith(
+                            color: context.editorTheme.gray400,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(
+                              color: context.editorTheme.generalGray800,
+                            ),
+                          ),
+                        ),
+                        HtmlInputField(
+                          context: context,
+                          controller: linkController,
+                          customContentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          cursorColor: context.editorTheme.generalGray700,
+                          onChanged: (_) => setState(() {}),
+                          onTapOutside: (event) =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
+                          hint: 'Ссылка',
+                          hintStyle: AppTextStyle.textT14Regular.copyWith(
+                            color: context.editorTheme.gray400,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                            borderSide: BorderSide(
+                              color: context.editorTheme.generalGray800,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    WidgetStateProperty.all<Color?>(
+                                        nameController.text.isNotEmpty &&
+                                                linkController.text.isNotEmpty
+                                            ? context.editorTheme.gray800
+                                            : context.editorTheme.gray800
+                                                .withValues(alpha: 0.7)),
+                                minimumSize: WidgetStateProperty.all<Size?>(
+                                    const Size.fromHeight(48)),
+                                shape: WidgetStateProperty.all<OutlinedBorder?>(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8))),
+                                textStyle: WidgetStateProperty.all<TextStyle?>(
+                                    AppTextStyle.headlineH14Medium.copyWith(
+                                        color: context.editorTheme.gray0)),
+                                elevation: WidgetStateProperty.all<double>(0),
+                              ),
+                              onPressed: () {
+                                if (nameController.text.isNotEmpty &&
+                                    linkController.text.isNotEmpty) {
+                                  Navigator.pop(context, true);
+                                }
+                              },
+                              child: Text(
+                                'Добавить',
+                                style: AppTextStyle.headlineH14Medium
+                                    .copyWith(color: context.editorTheme.gray0),
+                              )),
+                        )
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
-            actions: [
-              TextButton(
-                style: ButtonStyle(
-                  foregroundColor:
-                      WidgetStateProperty.all(context.editorTheme.gray800),
-                ),
-                child: const Text('Отмена'),
-                onPressed: () => Navigator.pop(context, false),
-              ),
-              TextButton(
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(
-                      nameController.text.isNotEmpty &&
-                              linkController.text.isNotEmpty
-                          ? context.editorTheme.gray800
-                          : context.editorTheme.gray400),
-                ),
-                child: const Text('Ок'),
-                onPressed: () {
-                  if (nameController.text.isNotEmpty &&
-                      linkController.text.isNotEmpty) {
-                    Navigator.pop(context, true);
-                  }
-                },
-              ),
-            ],
           );
         });
       },

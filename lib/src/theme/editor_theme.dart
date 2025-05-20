@@ -50,6 +50,10 @@ class EditorTheme extends InheritedWidget {
 
   Color get generalBg => EditorColors.bg;
 
+  Color get red500 => isDark ? EditorColors.red500Dark : EditorColors.red500;
+
+  Color get gray50 => isDark ? EditorColors.gray50Dark : EditorColors.gray50;
+
   static EditorTheme of(BuildContext context) {
     final result = context.dependOnInheritedWidgetOfExactType<EditorTheme>();
     assert(result != null, 'No EditorTheme found in context');

@@ -306,8 +306,25 @@ class _HtmlEditorState extends State<HtmlEditor> {
                             imageEmbedConfig: QuillEditorImageEmbedConfig(
                               imageProviderBuilder:
                                   _controller.imageProviderBuilder,
-                              // imageErrorWidgetBuilder: (context, _,__) =>
-                              // Text('Не удалось загрузить картинку...'),
+                              imageErrorWidgetBuilder: (context, _,__) =>
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        color: context.editorTheme.bgGrid,
+                                        borderRadius: BorderRadius.circular(8)
+                                    ),
+                                    padding: const EdgeInsets.all(8),
+                                    margin: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text('Не удалось загрузить изображение.\nПопробуй ещё раз',
+                                            style: AppTextStyle.textT14Regular,
+                                          ),
+                                        ),
+                                        SvgPicture.asset(HtmlIcons.smile),
+                                      ],
+                                    ),
+                                  ),
                               onImageClicked: (imageUrl) async {
                                 if (!_controller.quillController.readOnly) {
                                   await ImagePickerDialog
