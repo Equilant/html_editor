@@ -14,30 +14,31 @@ class LinkDialog {
     final result = await showDialog<bool>(
       context: context,
       builder: (_) {
-        return StatefulBuilder(builder: (_, setState) {
-          return Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 280.0),
-                child: Material(
-                  color: context.editorTheme.bg,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Dialog(
+              backgroundColor: context.editorTheme.bg,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              child: StatefulBuilder(builder: (_, setState) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: context.editorTheme.bg,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  type: MaterialType.card,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.editorTheme.bg,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 8,
-                      children: [
-                        Row(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 8,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
@@ -53,90 +54,88 @@ class LinkDialog {
                             ),
                           ],
                         ),
-                        HtmlInputField(
-                          context: context,
-                          controller: nameController,
-                          customContentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          cursorColor: context.editorTheme.generalGray700,
-                          onChanged: (_) => setState(() {}),
-                          onTapOutside: (event) =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
-                          hint: 'Название',
-                          hintStyle: AppTextStyle.textT14Regular.copyWith(
-                            color: context.editorTheme.gray400,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(8)),
-                            borderSide: BorderSide(
-                              color: context.editorTheme.generalGray800,
-                            ),
+                      ),
+                      HtmlInputField(
+                        context: context,
+                        controller: nameController,
+                        customContentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        cursorColor: context.editorTheme.gray700,
+                        onChanged: (_) => setState(() {}),
+                        onTapOutside: (event) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                        hint: 'Название',
+                        hintStyle: AppTextStyle.textT14Regular.copyWith(
+                          color: context.editorTheme.gray400,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(
+                            color: context.editorTheme.gray800,
                           ),
                         ),
-                        HtmlInputField(
-                          context: context,
-                          controller: linkController,
-                          customContentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          cursorColor: context.editorTheme.generalGray700,
-                          onChanged: (_) => setState(() {}),
-                          onTapOutside: (event) =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
-                          hint: 'Ссылка',
-                          hintStyle: AppTextStyle.textT14Regular.copyWith(
-                            color: context.editorTheme.gray400,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(8)),
-                            borderSide: BorderSide(
-                              color: context.editorTheme.generalGray800,
-                            ),
+                      ),
+                      HtmlInputField(
+                        context: context,
+                        controller: linkController,
+                        customContentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        cursorColor: context.editorTheme.gray700,
+                        onChanged: (_) => setState(() {}),
+                        onTapOutside: (event) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                        hint: 'Ссылка',
+                        hintStyle: AppTextStyle.textT14Regular.copyWith(
+                          color: context.editorTheme.gray400,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide(
+                            color: context.editorTheme.gray800,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    WidgetStateProperty.all<Color?>(
-                                        nameController.text.isNotEmpty &&
-                                                linkController.text.isNotEmpty
-                                            ? context.editorTheme.gray800
-                                            : context.editorTheme.gray800
-                                                .withValues(alpha: 0.7)),
-                                minimumSize: WidgetStateProperty.all<Size?>(
-                                    const Size.fromHeight(48)),
-                                shape: WidgetStateProperty.all<OutlinedBorder?>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8))),
-                                textStyle: WidgetStateProperty.all<TextStyle?>(
-                                    AppTextStyle.headlineH14Medium.copyWith(
-                                        color: context.editorTheme.gray0)),
-                                elevation: WidgetStateProperty.all<double>(0),
-                              ),
-                              onPressed: () {
-                                if (nameController.text.isNotEmpty &&
-                                    linkController.text.isNotEmpty) {
-                                  Navigator.pop(context, true);
-                                }
-                              },
-                              child: Text(
-                                'Добавить',
-                                style: AppTextStyle.headlineH14Medium
-                                    .copyWith(color: context.editorTheme.gray0),
-                              )),
-                        )
-                      ],
-                    ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all<Color?>(
+                                  nameController.text.isNotEmpty &&
+                                          linkController.text.isNotEmpty
+                                      ? context.editorTheme.gray800
+                                      : context.editorTheme.gray800
+                                          .withValues(alpha: 0.7)),
+                              minimumSize: WidgetStateProperty.all<Size?>(
+                                  const Size.fromHeight(48)),
+                              shape: WidgetStateProperty.all<OutlinedBorder?>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8))),
+                              textStyle: WidgetStateProperty.all<TextStyle?>(
+                                  AppTextStyle.headlineH14Medium.copyWith(
+                                      color: context.editorTheme.gray0)),
+                              elevation: WidgetStateProperty.all<double>(0),
+                            ),
+                            onPressed: () {
+                              if (nameController.text.isNotEmpty &&
+                                  linkController.text.isNotEmpty) {
+                                Navigator.pop(context, true);
+                              }
+                            },
+                            child: Text(
+                              'Добавить',
+                              style: AppTextStyle.headlineH14Medium
+                                  .copyWith(color: context.editorTheme.gray0),
+                            )),
+                      )
+                    ],
                   ),
-                ),
-              ),
+                );
+              }),
             ),
-          );
-        });
+          ],
+        );
       },
     );
 

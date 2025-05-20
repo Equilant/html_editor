@@ -180,7 +180,8 @@ class _HtmlInputFieldState extends State<HtmlInputField> {
   InputBorder _getInputBorder(BuildContext context) {
     return OutlineInputBorder(
       borderRadius: const BorderRadius.all(Radius.circular(8)),
-      borderSide: BorderSide(color: widget.borderColor ?? _getColorElem(context)),
+      borderSide:
+          BorderSide(color: widget.borderColor ?? _getColorElem(context)),
     );
   }
 
