@@ -70,7 +70,7 @@ class _HtmlEditorState extends State<HtmlEditor> {
             textSelectionTheme: TextSelectionThemeData(
               cursorColor: context.editorTheme.generalGray700,
             ),
-            dialogTheme: DialogTheme(
+            dialogTheme: DialogThemeData(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
