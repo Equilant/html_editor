@@ -18,7 +18,8 @@ class EditorEmbedBuilder extends EmbedBuilder {
       offset: Offset(0, isSubscript ? 4 : -4),
       child: Text(
         text,
-        style: style.copyWith(fontSize: style.fontSize! * 0.8),
+        style: style.copyWith(
+            fontSize: style.fontSize! * 0.8, color: Colors.black),
       ),
     );
   }
