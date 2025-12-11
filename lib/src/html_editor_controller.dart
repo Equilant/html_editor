@@ -611,7 +611,9 @@ class HtmlEditorController implements IHtmlEditorController {
         ? Permission.camera
         : Permission.photos;
 
-    final status = await permission.request();
+    final status = io.Platform.isAndroid
+        ? PermissionStatus.granted
+        : await permission.request();
 
     if (status.isPermanentlyDenied) {
       if (context.mounted) {
